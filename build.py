@@ -30,10 +30,13 @@ FAQ_BLOCKS = {"homeBlockTypeV"}                               # title + faqItem 
 PRODUCT_BLOCKS = {"homeBlockTypeD", "homeBlockTypeAL"}        # title + description + products
 LINK_BLOCKS = {"homeBlockTypeBI", "homeBlockTypeBH", "homeBlockTypeZ"}  # related categories
 USP_BLOCKS = {"homeBlockTypeBB"}                              # title + subtitle + icon grid items
+PERSONA_BLOCKS = {"homeBlockTypeN"}                           # "who is this for" tiles: title + description + subitems
+FORM_BLOCKS = {"homeBlockTypeAW"}                             # contact form on the page (quote, design service...)
 SKIPPED_BLOCKS = {  # layout / marketing blocks with nothing useful for customer service
     "homeBlockTypeAZ": "product filter", "homeBlockTypeP": "reviews", "homeBlockTypeAJ": "blog teasers",
     "homeBlockTypeA": "banner", "homeBlockTypeAI": "promo", "homeBlockTypeC": "brand logos",
     "homeBlockTypeG": "generic USPs", "homeBlockTypeBG": "promo cards",
+    "homeBlockTypeAH": "in-page menu (anchor links)", "modBlockAHAnchorReference": "in-page menu anchor",
 }
 
 
@@ -294,6 +297,21 @@ class Builder:
                     pts.append(txt)
             sub = self.t(f.get("subtitle") or "")
             return ("usps", title, (sub, pts)) if pts or sub else None
+        if typ in PERSONA_BLOCKS:
+            pts = []
+            for it in self.getmany(link_ids(f.get("subitems"))):
+                if not self.visible(it):
+                    continue
+                txt = " – ".join(x for x in [plain(self.t(it["fields"].get("title") or "")), plain(md_to_html(self.t(it["fields"].get("subtitle") or "")))] if x)
+                if txt:
+                    pts.append(txt)
+            sub = plain(md_to_html(self.t(f.get("description") or "")))
+            return ("usps", title, (sub, pts)) if pts or sub else None
+        if typ in FORM_BLOCKS:
+            form = f.get("formType") or "contact"
+            desc = md_to_html(self.t(f.get("description")))
+            note = f"<p><em>The category page has a “{html.escape(form)}” form for this.</em></p>"
+            return ("text", title or form, desc + note)
         if typ not in SKIPPED_BLOCKS:
             self.report.unknown_blocks[typ] = self.report.unknown_blocks.get(typ, 0) + 1
         return None
