@@ -337,9 +337,9 @@ class Builder:
 def page_html(c, shop, noindex):
     e = html.escape
     out = [f"<!doctype html><html lang=\"{e(shop['locale'])}\"><head><meta charset=\"utf-8\">",
-           f"<title>{e(c['name'])} – category – {e(shop['name'])}</title>",
-           f"<link rel=\"canonical\" href=\"{e(c['url'])}\">"]
-    if noindex:
+           f"<title>{e(c['name'])} – category – {e(shop['name'])}</title>"]
+    if noindex:  # off by default: Engaige's scraper stores empty documents when these tags are present
+        out.append(f"<link rel=\"canonical\" href=\"{e(c['url'])}\">")
         out.append("<meta name=\"robots\" content=\"noindex\">")
     out.append(f"<meta name=\"description\" content=\"{e(plain(c['summary']))}\"></head><body>")
     out.append(f"<h1>{e(c['name'])}</h1>")
@@ -401,7 +401,7 @@ def main():
     ap.add_argument("--site-url", default=os.environ.get("SITE_URL", "").rstrip("/"))
     ap.add_argument("--only")
     ap.add_argument("--no-live-check", action="store_true")
-    ap.add_argument("--allow-index", action="store_true", help="do not add noindex to pages")
+    ap.add_argument("--noindex", action="store_true", help="add noindex + canonical tags (Engaige then stores empty docs)")
     a = ap.parse_args()
 
     shops = [s for s in json.load(open(os.path.join(ROOT, "config/shops.json")))["shops"] if s.get("enabled")]
@@ -445,7 +445,7 @@ def main():
             d = os.path.join(a.out, "categories", shop["id"], slug)
             os.makedirs(d, exist_ok=True)
             with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
-                fh.write(page_html(c, shop, noindex=not a.allow_index))
+                fh.write(page_html(c, shop, noindex=a.noindex))
             built.append(c)
         # sitemap
         smdir = os.path.join(a.out, "categories", shop["id"])
