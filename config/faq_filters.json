@@ -1,0 +1,21 @@
+{
+  "_help": "Category-page FAQs whose QUESTION matches one of these patterns are left out, because order-specific topics (delivery dates, tracking, order status, cancelling, changing an order) are handled by Engaige policies such as WISMO. Patterns are case-insensitive regular expressions, grouped per language. Every FAQ that is left out is listed in the build report.",
+  "en": [
+    "\\bwhen (will|does|do|can) (i|we|my|our|the)\\b.*\\b(arrive|arriving|be delivered|delivered|ship|shipped|get|receive)\\b",
+    "\\bwhere is my\\b",
+    "\\btrack(ing)?\\b",
+    "\\border status\\b",
+    "\\bdelivery date\\b",
+    "\\bcancel",
+    "\\b(change|modify|amend|edit)\\b.*\\b(my|an|the) order\\b"
+  ],
+  "it": [
+    "\\bquando (arriva|arriverà|arriveranno|riceverò|ricevo|verrà consegnat|verranno consegnat|sarà consegnat|saranno consegnat)",
+    "\\bdov'è il mio\\b|\\bdove si trova il mio\\b",
+    "\\btracciament|\\btracking\\b|\\btracciare\\b",
+    "\\bstato (del|dell'|dello) ordine\\b",
+    "\\bdata di consegna\\b",
+    "\\bannull",
+    "\\b(modificare|cambiare)\\b.*\\bordine\\b"
+  ]
+}

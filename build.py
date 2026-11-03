@@ -1,0 +1,467 @@
+#!/usr/bin/env python3
+"""
+Anna knowledge site builder — categories.
+
+Reads Helloprint category pages from Contentful (Content Delivery API, published content only),
+keeps the blocks that are visible on each shop, cleans them up and writes one plain HTML page per
+category per shop, plus a sitemap per shop that Engaige's "Sitemap" knowledge folder can sync from.
+
+Usage
+  python build.py                      # live: needs CONTENTFUL_SPACE_ID + CONTENTFUL_CDA_TOKEN
+  python build.py --fixture store.json # offline test with an exported entry store
+Options
+  --out _site          output folder (default _site)
+  --site-url URL       public base URL of the site (for the sitemap), e.g. https://user.github.io/anna-knowledge
+  --only slug,slug     build only these category slugs (testing)
+"""
+import argparse, datetime as dt, html, json, os, re, sys, time
+from xml.sax.saxutils import escape as xml_escape
+
+import markdown  # pip install markdown
+import requests  # pip install requests
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+CATEGORY_TYPE = "pageHomeModular"
+CATEGORY_VARIATION = "Category - Modular page"
+
+# Block types (Contentful content type ids) and how they are used
+TEXT_BLOCKS = {"homeBlockTypeAC", "homeBlockTypeS"}          # title + markdown content
+FAQ_BLOCKS = {"homeBlockTypeV"}                               # title + faqItem -> questionAndAnswer
+PRODUCT_BLOCKS = {"homeBlockTypeD", "homeBlockTypeAL"}        # title + description + products
+LINK_BLOCKS = {"homeBlockTypeBI", "homeBlockTypeBH", "homeBlockTypeZ"}  # related categories
+USP_BLOCKS = {"homeBlockTypeBB"}                              # title + subtitle + icon grid items
+SKIPPED_BLOCKS = {  # layout / marketing blocks with nothing useful for customer service
+    "homeBlockTypeAZ": "product filter", "homeBlockTypeP": "reviews", "homeBlockTypeAJ": "blog teasers",
+    "homeBlockTypeA": "banner", "homeBlockTypeAI": "promo", "homeBlockTypeC": "brand logos",
+    "homeBlockTypeG": "generic USPs", "homeBlockTypeBG": "promo cards",
+}
+
+
+# --------------------------------------------------------------------------------------------
+# Data sources. Both return "resolved" entries for ONE locale:
+#   {"id", "type", "updated", "fields": {field: value}}  (links stay as {"sys": {"type": "Link", ...}})
+# --------------------------------------------------------------------------------------------
+class CDASource:
+    """Contentful Content Delivery API. Only published content; locale fallbacks applied by Contentful."""
+
+    def __init__(self, space, token, environment="master"):
+        self.base = f"https://cdn.contentful.com/spaces/{space}/environments/{environment}"
+        self.s = requests.Session()
+        self.s.headers["Authorization"] = f"Bearer {token}"
+        self.cache = {}  # (locale, id) -> entry
+
+    def _get(self, params):
+        for attempt in range(8):
+            r = self.s.get(self.base + "/entries", params=params, timeout=60)
+            if r.status_code == 429:
+                time.sleep(float(r.headers.get("X-Contentful-RateLimit-Reset", 2 ** attempt)))
+                continue
+            r.raise_for_status()
+            return r.json()
+        raise RuntimeError("Contentful rate limit: gave up after retries")
+
+    @staticmethod
+    def _norm(e):
+        sys_ = e["sys"]
+        return {"id": sys_["id"], "type": sys_.get("contentType", {}).get("sys", {}).get("id"),
+                "updated": sys_.get("updatedAt"), "fields": e.get("fields", {})}
+
+    def _absorb(self, data, locale):
+        for e in data.get("items", []) + data.get("includes", {}).get("Entry", []):
+            self.cache[(locale, e["sys"]["id"])] = self._norm(e)
+
+    def category_pages(self, locale):
+        out, skip = [], 0
+        while True:
+            data = self._get({"content_type": CATEGORY_TYPE, "locale": locale, "include": 2, "limit": 40,
+                              "skip": skip, "fields.analyticsPageTypeVariation": CATEGORY_VARIATION,
+                              "order": "sys.id"})
+            self._absorb(data, locale)
+            out += [self._norm(e) for e in data["items"]]
+            skip += len(data["items"])
+            if skip >= data["total"] or not data["items"]:
+                return out
+
+    def get(self, ids, locale):
+        missing = [i for i in dict.fromkeys(ids) if (locale, i) not in self.cache]
+        for k in range(0, len(missing), 100):
+            chunk = missing[k:k + 100]
+            data = self._get({"sys.id[in]": ",".join(chunk), "locale": locale, "include": 1, "limit": 1000})
+            self._absorb(data, locale)
+            for i in chunk:  # remember unknown/unpublished ids so we don't ask again
+                self.cache.setdefault((locale, i), None)
+        return {i: self.cache.get((locale, i)) for i in ids}
+
+
+class FixtureSource:
+    """Offline source: an exported multi-locale entry store (used for testing without the API key)."""
+    FALLBACKS = {"en-IE": ["en-IE", "en"], "en-GB": ["en-GB", "en"], "en-US": ["en-US", "en"],
+                 "it": ["it", "en"], "nl": ["nl", "en"], "nl-BE": ["nl-BE", "en"], "de-DE": ["de-DE", "en"],
+                 "fr-FR": ["fr-FR", "en"], "fr-BE": ["fr-BE", "en"], "es-ES": ["es-ES", "en"], "sv-SE": ["sv-SE", "en"]}
+
+    def __init__(self, path):
+        self.store = json.load(open(path, encoding="utf-8"))
+
+    def _resolve(self, e, locale):
+        if not e or not e["sys"].get("published", True):
+            return None
+        chain = self.FALLBACKS.get(locale, [locale, "en"])
+        fields = {}
+        for f, byloc in e["fields"].items():
+            for loc in chain:
+                if loc in byloc:
+                    fields[f] = byloc[loc]
+                    break
+        return {"id": e["sys"]["id"], "type": e["sys"]["contentType"], "updated": None, "fields": fields}
+
+    def category_pages(self, locale):
+        out = []
+        for e in self.store.values():
+            r = self._resolve(e, locale)
+            if r and r["type"] == CATEGORY_TYPE and r["fields"].get("analyticsPageTypeVariation") == CATEGORY_VARIATION:
+                out.append(r)
+        return out
+
+    def get(self, ids, locale):
+        return {i: self._resolve(self.store.get(i), locale) for i in ids}
+
+
+# --------------------------------------------------------------------------------------------
+# Helpers
+# --------------------------------------------------------------------------------------------
+def link_ids(value):
+    if isinstance(value, dict) and value.get("sys", {}).get("type") == "Link" and value["sys"].get("linkType") == "Entry":
+        return [value["sys"]["id"]]
+    if isinstance(value, list):
+        return [i for v in value for i in link_ids(v)]
+    return []
+
+
+def as_bool(v, default=None):
+    if v is None:
+        return default
+    if isinstance(v, bool):
+        return v
+    return str(v).strip().lower() == "true"
+
+
+class Report:
+    def __init__(self):
+        self.filtered, self.skipped_pages, self.unknown_blocks, self.template_vars, self.missing = [], [], {}, {}, set()
+        self.written = []
+
+
+def fill_template(text, shop, report, where):
+    if not text:
+        return ""
+    def sub(m):
+        key = m.group(1).strip()
+        if key in shop["template_vars"]:
+            return shop["template_vars"][key]
+        report.template_vars[key] = report.template_vars.get(key, 0) + 1
+        return ""
+    return re.sub(r"\{\{\s*([a-zA-Z_]+)\s*\}\}", sub, text)
+
+
+def md_to_html(text, shift=1):
+    """Markdown (as used in Contentful text fields) -> clean HTML, headings shifted down below the block heading."""
+    if not text:
+        return ""
+    text = re.sub(r"<br\s*/?>", "\n\n", text, flags=re.I)
+    text = re.sub(r"</?(p|div|span|font|center)[^>]*>", "\n", text, flags=re.I)
+    out = markdown.markdown(text, extensions=["sane_lists"])
+    def shift_h(m):
+        level = min(6, int(m.group(2)) + shift)
+        return f"<{m.group(1)}h{level}>"
+    out = re.sub(r"<(/?)h([1-6])>", shift_h, out)
+    out = re.sub(r"<(script|style|iframe)[\s\S]*?</\1>", "", out, flags=re.I)
+    return out.strip()
+
+
+def plain(text):
+    """HTML -> one line of plain text; list items separated by '; '."""
+    t = re.sub(r"</li>\s*", "; ", text or "", flags=re.I)
+    t = re.sub(r"<[^>]+>", " ", t)
+    t = html.unescape(t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return re.sub(r"\s*;\s*$", "", t).replace(" ;", ";")
+
+
+def clean_name(s):
+    return re.sub(r"^\s*(PLP|PC|BI|D|S|V)\s*-\s*", "", s or "").strip()
+
+
+# --------------------------------------------------------------------------------------------
+# Building
+# --------------------------------------------------------------------------------------------
+class Builder:
+    def __init__(self, src, shop, filters, report):
+        self.src, self.shop, self.report = src, shop, report
+        self.loc = shop["locale"]
+        self.domains = {d.lower() for d in shop["domains"]}
+        self.patterns = [re.compile(p, re.I) for p in filters.get(shop["lang"], [])]
+
+    def get1(self, i):
+        return self.src.get([i], self.loc).get(i) if i else None
+
+    def getmany(self, ids):
+        found = self.src.get(ids, self.loc)
+        for i, e in found.items():
+            if e is None:
+                self.report.missing.add(i)
+        return [found[i] for i in ids if found.get(i)]
+
+    def visible(self, block):
+        cond_ids = link_ids(block["fields"].get("shouldShowPerShop"))
+        if not cond_ids:
+            return True
+        cond = self.get1(cond_ids[0])
+        if not cond:
+            return True
+        applies = {str(d).lower() for d in (cond["fields"].get("appliesTo") or [])}
+        matched = bool(self.domains & applies)
+        show_only_matched = as_bool(cond["fields"].get("effectForAnyMatchedDomain"), True)
+        return matched if show_only_matched else not matched
+
+    def t(self, text, where=""):
+        return fill_template(text, self.shop, self.report, where)
+
+    def path(self, page):
+        names, seen, cur = [], set(), page
+        for _ in range(6):
+            pid = (link_ids(cur["fields"].get("parentCategory")) or [None])[0]
+            if not pid or pid in seen:
+                break
+            seen.add(pid)
+            cur = self.get1(pid)
+            if not cur:
+                break
+            n = cur["fields"].get("searchName") or clean_name(cur["fields"].get("title"))
+            if n:
+                names.append(self.t(n))
+        return list(reversed(names))
+
+    def render_block(self, b, page_name):
+        typ, f = b["type"], b["fields"]
+        title = self.t(f.get("title") or "")
+        if typ in TEXT_BLOCKS:
+            body = md_to_html(self.t(f.get("content"))) + md_to_html(self.t(f.get("contentRight")))
+            if not plain(body) and not title:
+                return None
+            return ("text", title, body)
+        if typ in FAQ_BLOCKS:
+            qa = []
+            for item in self.getmany(link_ids(f.get("faqItem"))):
+                q = self.t(item["fields"].get("question") or "").strip()
+                a = self.t(item["fields"].get("answer") or "").strip()
+                if not q or not a:
+                    continue
+                hit = next((p.pattern for p in self.patterns if p.search(q)), None)
+                if hit:
+                    self.report.filtered.append((self.shop["id"], page_name, q, hit))
+                    continue
+                qa.append((q, md_to_html(a, shift=3)))
+            return ("faq", title, qa) if qa else None
+        if typ in PRODUCT_BLOCKS:
+            items = []
+            for p in self.getmany(link_ids(f.get("products"))):
+                if p["type"] == "bundleItem" and not self.visible(p):
+                    continue
+                name = self.t(p["fields"].get("name") or p["fields"].get("title") or "")
+                if not name:
+                    continue
+                items.append((name, plain(md_to_html(self.t(p["fields"].get("highlights") or "")))))
+            desc = md_to_html(self.t(f.get("description")))
+            return ("products", title, (desc, items)) if items or plain(desc) else None
+        if typ in LINK_BLOCKS:
+            names = []
+            for c in self.getmany(link_ids(f.get("subitems")) + link_ids(f.get("categories"))):
+                n = c["fields"].get("searchName")
+                target = (link_ids(c["fields"].get("link")) or [None])[0]  # pageCard -> linked category page
+                if not n and target:
+                    tp = self.get1(target)
+                    n = tp and (tp["fields"].get("searchName") or clean_name(tp["fields"].get("title")))
+                if not n:
+                    n = c["fields"].get("title") or clean_name(c["fields"].get("name"))
+                if n:
+                    names.append(self.t(re.sub(r"\s*\([^)]*\)", "", n).strip()))
+            return ("links", title, names) if names else None
+        if typ in USP_BLOCKS:
+            pts = []
+            for it in self.getmany(link_ids(f.get("iconGridItems"))):
+                txt = " – ".join(x for x in [self.t(it["fields"].get("title") or ""), plain(md_to_html(self.t(it["fields"].get("description") or it["fields"].get("text") or "")))] if x)
+                if txt:
+                    pts.append(txt)
+            sub = self.t(f.get("subtitle") or "")
+            return ("usps", title, (sub, pts)) if pts or sub else None
+        if typ not in SKIPPED_BLOCKS:
+            self.report.unknown_blocks[typ] = self.report.unknown_blocks.get(typ, 0) + 1
+        return None
+
+    def build_page(self, page):
+        f = page["fields"]
+        name = self.t(f.get("searchName") or clean_name(f.get("title")))
+        slug = f.get("curl")
+        block_ids = link_ids(f.get("bodyBlocks")) or link_ids(f.get("topBlock"))
+        sections = []
+        for b in self.getmany(block_ids):
+            if not self.visible(b):
+                continue
+            r = self.render_block(b, name)
+            if r:
+                sections.append(r)
+        tags = [self.t(x) for x in (f.get("searchTags") or []) if x]
+        return {"name": name, "slug": slug, "url": f"{self.shop['url_prefix']}/{slug}", "path": self.path(page),
+                "summary": self.t(f.get("meta_description") or ""), "tags": tags, "sections": sections,
+                "updated": page.get("updated"), "id": page["id"]}
+
+
+def page_html(c, shop, noindex):
+    e = html.escape
+    out = [f"<!doctype html><html lang=\"{e(shop['locale'])}\"><head><meta charset=\"utf-8\">",
+           f"<title>{e(c['name'])} – category – {e(shop['name'])}</title>",
+           f"<link rel=\"canonical\" href=\"{e(c['url'])}\">"]
+    if noindex:
+        out.append("<meta name=\"robots\" content=\"noindex\">")
+    out.append(f"<meta name=\"description\" content=\"{e(plain(c['summary']))}\"></head><body>")
+    out.append(f"<h1>{e(c['name'])}</h1>")
+    out.append(f"<p><strong>Category page on {e(shop['name'])}:</strong> <a href=\"{e(c['url'])}\">{e(c['url'])}</a></p>")
+    if c["path"]:
+        out.append(f"<p><strong>Category path:</strong> {e(' › '.join(c['path'] + [c['name']]))}</p>")
+    if c["summary"]:
+        out.append(f"<p><strong>Summary:</strong> {e(plain(c['summary']))}</p>")
+    if c["tags"]:
+        out.append(f"<p><strong>Also searched as:</strong> {e(', '.join(c['tags']))}</p>")
+    faqs = []
+    for kind, title, data in c["sections"]:
+        if kind == "faq":
+            faqs.append((title, data))
+            continue
+        if title:
+            out.append(f"<h2>{e(title)}</h2>")
+        if kind == "text":
+            out.append(data)
+        elif kind == "products":
+            desc, items = data
+            if not title:
+                out.append(f"<h2>Products in {e(c['name'])}</h2>")
+            out.append(desc)
+            out.append("<ul>" + "".join(f"<li><strong>{e(n)}</strong>{(' – ' + e(h)) if h else ''}</li>" for n, h in items) + "</ul>")
+        elif kind == "links":
+            out.append("<p><strong>Related categories:</strong> " + e(", ".join(data)) + "</p>")
+        elif kind == "usps":
+            sub, pts = data
+            if sub:
+                out.append(f"<p>{e(plain(sub))}</p>")
+            out.append("<ul>" + "".join(f"<li>{e(p)}</li>" for p in pts) + "</ul>")
+    for title, qa in faqs:
+        out.append(f"<h2>Questions answered on the {e(c['name'])} category page (before ordering)</h2>")
+        if title:
+            out.append(f"<p><em>{e(title)}</em></p>")
+        for q, a in qa:
+            out.append(f"<h3>{e(q)}</h3>{a}")
+    out.append(f"<hr><p><small>Generated from Contentful (entry {e(c['id'])}) for Anna's knowledge base. "
+               f"Always refer customers to the category page above.</small></p></body></html>")
+    return "\n".join(out)
+
+
+def fetch_live_slugs(url, prefix):
+    try:
+        r = requests.get(url, timeout=60, headers={"User-Agent": "anna-knowledge-builder"})
+        r.raise_for_status()
+        locs = re.findall(r"<loc>\s*([^<]+?)\s*</loc>", r.text)
+        return {l[len(prefix) + 1:].strip("/") for l in locs if l.startswith(prefix + "/")}
+    except Exception as ex:  # noqa
+        print(f"  ! could not read live sitemap {url}: {ex} — building without that check")
+        return None
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--fixture")
+    ap.add_argument("--out", default=os.path.join(ROOT, "_site"))
+    ap.add_argument("--site-url", default=os.environ.get("SITE_URL", "").rstrip("/"))
+    ap.add_argument("--only")
+    ap.add_argument("--no-live-check", action="store_true")
+    ap.add_argument("--allow-index", action="store_true", help="do not add noindex to pages")
+    a = ap.parse_args()
+
+    shops = [s for s in json.load(open(os.path.join(ROOT, "config/shops.json")))["shops"] if s.get("enabled")]
+    filters = json.load(open(os.path.join(ROOT, "config/faq_filters.json")))
+    if a.fixture:
+        src = FixtureSource(a.fixture)
+    else:
+        space, token = os.environ.get("CONTENTFUL_SPACE_ID"), os.environ.get("CONTENTFUL_CDA_TOKEN")
+        if not space or not token:
+            sys.exit("Missing CONTENTFUL_SPACE_ID / CONTENTFUL_CDA_TOKEN")
+        src = CDASource(space, token)
+    only = set(a.only.split(",")) if a.only else None
+    report = Report()
+    today = dt.date.today().isoformat()
+    os.makedirs(a.out, exist_ok=True)
+    open(os.path.join(a.out, ".nojekyll"), "w").close()
+    index_rows = []
+
+    for shop in shops:
+        print(f"== {shop['name']} ({shop['locale']})")
+        b = Builder(src, shop, filters, report)
+        live = None if (a.fixture or a.no_live_check) else fetch_live_slugs(shop["live_sitemap"], shop["url_prefix"])
+        pages = src.category_pages(shop["locale"])
+        seen, built = set(), []
+        for p in sorted(pages, key=lambda x: x["id"]):
+            slug, f = p["fields"].get("curl"), p["fields"]
+            if not slug or "/" in slug:
+                continue
+            if only and slug not in only:
+                continue
+            if (f.get("robots_content") or "").startswith("noindex"):
+                report.skipped_pages.append((shop["id"], slug, "noindex in Contentful")); continue
+            if live is not None and slug not in live:
+                report.skipped_pages.append((shop["id"], slug, "not in the live shop sitemap")); continue
+            if slug in seen:
+                report.skipped_pages.append((shop["id"], slug, "duplicate slug")); continue
+            seen.add(slug)
+            c = b.build_page(p)
+            if not c["sections"] and not c["summary"]:
+                report.skipped_pages.append((shop["id"], slug, "no content")); continue
+            d = os.path.join(a.out, "categories", shop["id"], slug)
+            os.makedirs(d, exist_ok=True)
+            with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
+                fh.write(page_html(c, shop, noindex=not a.allow_index))
+            built.append(c)
+        # sitemap
+        smdir = os.path.join(a.out, "categories", shop["id"])
+        os.makedirs(smdir, exist_ok=True)
+        base = f"{a.site_url}/categories/{shop['id']}"
+        with open(os.path.join(smdir, "sitemap.xml"), "w", encoding="utf-8") as fh:
+            fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+            for c in sorted(built, key=lambda x: x["slug"]):
+                lm = (c["updated"] or today)[:10]
+                fh.write(f"  <url><loc>{xml_escape(base + '/' + c['slug'] + '/')}</loc><lastmod>{lm}</lastmod></url>\n")
+            fh.write("</urlset>\n")
+        print(f"   {len(built)} category pages written")
+        index_rows.append((shop, len(built), base + "/sitemap.xml"))
+
+    # index + report
+    e = html.escape
+    rep = [f"<!doctype html><html><head><meta charset='utf-8'><meta name='robots' content='noindex'><title>Build report</title></head><body>",
+           f"<h1>Build report – {today}</h1>"]
+    rep.append(f"<h2>FAQs left out by the filter ({len(report.filtered)})</h2><p>Edit <code>config/faq_filters.json</code> to change this.</p><ul>")
+    rep += [f"<li>[{e(s)}] <strong>{e(p)}</strong>: {e(q)} <small>(rule: <code>{e(r)}</code>)</small></li>" for s, p, q, r in report.filtered]
+    rep.append(f"</ul><h2>Category pages not built ({len(report.skipped_pages)})</h2><ul>")
+    rep += [f"<li>[{e(s)}] {e(sl)} – {e(why)}</li>" for s, sl, why in report.skipped_pages]
+    rep.append("</ul><h2>Block types not handled</h2><ul>" + "".join(f"<li>{e(k)}: {v}×</li>" for k, v in report.unknown_blocks.items()) + "</ul>")
+    rep.append("<h2>Unknown template variables (removed)</h2><ul>" + "".join(f"<li>{{{{{e(k)}}}}}: {v}×</li>" for k, v in report.template_vars.items()) + "</ul>")
+    rep.append(f"<h2>Linked entries not found / unpublished ({len(report.missing)})</h2></body></html>")
+    with open(os.path.join(a.out, "report.html"), "w", encoding="utf-8") as fh:
+        fh.write("\n".join(rep))
+    with open(os.path.join(a.out, "index.html"), "w", encoding="utf-8") as fh:
+        fh.write("<!doctype html><html><head><meta charset='utf-8'><meta name='robots' content='noindex'><title>Anna knowledge</title></head><body>"
+                 f"<h1>Anna knowledge site</h1><p>Last build: {today}. <a href='report.html'>Build report</a></p><ul>"
+                 + "".join(f"<li>{e(s['name'])} – categories: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in index_rows)
+                 + "</ul></body></html>")
+    print(f"Filtered FAQs: {len(report.filtered)} | skipped pages: {len(report.skipped_pages)} | unknown blocks: {report.unknown_blocks} | unknown vars: {report.template_vars}")
+
+
+if __name__ == "__main__":
+    main()
