@@ -10,7 +10,8 @@
       "url_prefix": "https://www.helloprint.com/en-ie",
       "domains": ["helloprint.ie"],
       "live_sitemap": "https://www.helloprint.com/en-ie/sitemap_collections_1.xml",
-      "template_vars": {"shop_name": "HelloPrint", "shop_url": "www.helloprint.com/en-ie", "country_code": "Ireland"}
+      "template_vars": {"shop_name": "HelloPrint", "shop_url": "www.helloprint.com/en-ie", "country_code": "Ireland",
+                        "country_name": "Ireland", "shop_country": "Ireland", "shop_phone": "+353 818 882 249"}
     },
     {
       "id": "it-it",
