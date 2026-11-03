@@ -1,0 +1,59 @@
+name: Build knowledge site
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # every night around 04:17-05:17 Amsterdam time
+  workflow_dispatch: {}      # "Run workflow" button in the Actions tab
+  push:
+    branches: [main]
+    paths: ["build.py", "config/**", ".github/workflows/build.yml"]
+
+permissions:
+  contents: write   # to save a snapshot of the generated pages (history of what Anna knew)
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build pages from Contentful
+        env:
+          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+          CONTENTFUL_CDA_TOKEN: ${{ secrets.CONTENTFUL_CDA_TOKEN }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+        run: python build.py --out _site
+
+      - name: Save snapshot in the repository
+        run: |
+          rm -rf snapshot && cp -r _site snapshot
+          git config user.name "anna-knowledge-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add snapshot
+          git diff --cached --quiet || git commit -m "Snapshot $(date -u +%F) [skip ci]"
+          git push || echo "snapshot push skipped"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
