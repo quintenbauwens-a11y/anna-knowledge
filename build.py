@@ -343,22 +343,35 @@ class Builder:
                 "updated": max(self.touched) if self.touched else None, "id": page["id"]}
 
 
+LABELS = {  # page labels per language (shops.json "lang"); add a language here when enabling a new country
+    "en": {"title": "category", "page": "Category page on {shop}", "path": "Category path", "summary": "Summary",
+           "tags": "Also searched as", "products": "Products in {name}", "related": "Related categories",
+           "faq": "Questions answered on the {name} category page (before ordering)",
+           "footer": "Generated from Contentful (entry {id}) for Anna's knowledge base. Always refer customers to the category page above."},
+    "it": {"title": "categoria", "page": "Pagina categoria su {shop}", "path": "Percorso categoria", "summary": "Riepilogo",
+           "tags": "Cercato anche come", "products": "Prodotti in {name}", "related": "Categorie correlate",
+           "faq": "Domande sulla pagina categoria {name} (prima dell'ordine)",
+           "footer": "Generato da Contentful (entry {id}) per la knowledge base di Anna. Rimanda sempre il cliente alla pagina categoria qui sopra."},
+}
+
+
 def page_html(c, shop, noindex):
     e = html.escape
+    L = LABELS.get(shop.get("lang"), LABELS["en"])
     out = [f"<!doctype html><html lang=\"{e(shop['locale'])}\"><head><meta charset=\"utf-8\">",
-           f"<title>{e(c['name'])} – category – {e(shop['name'])}</title>"]
+           f"<title>{e(c['name'])} – {L['title']} – {e(shop['name'])}</title>"]
     if noindex:  # off by default: Engaige's scraper stores empty documents when these tags are present
         out.append(f"<link rel=\"canonical\" href=\"{e(c['url'])}\">")
         out.append("<meta name=\"robots\" content=\"noindex\">")
     out.append(f"<meta name=\"description\" content=\"{e(plain(c['summary']))}\"></head><body>")
     out.append(f"<h1>{e(c['name'])}</h1>")
-    out.append(f"<p><strong>Category page on {e(shop['name'])}:</strong> <a href=\"{e(c['url'])}\">{e(c['url'])}</a></p>")
+    out.append(f"<p><strong>{e(L['page'].format(shop=shop['name']))}:</strong> <a href=\"{e(c['url'])}\">{e(c['url'])}</a></p>")
     if c["path"]:
-        out.append(f"<p><strong>Category path:</strong> {e(' › '.join(c['path'] + [c['name']]))}</p>")
+        out.append(f"<p><strong>{L['path']}:</strong> {e(' › '.join(c['path'] + [c['name']]))}</p>")
     if c["summary"]:
-        out.append(f"<p><strong>Summary:</strong> {e(plain(c['summary']))}</p>")
+        out.append(f"<p><strong>{L['summary']}:</strong> {e(plain(c['summary']))}</p>")
     if c["tags"]:
-        out.append(f"<p><strong>Also searched as:</strong> {e(', '.join(c['tags']))}</p>")
+        out.append(f"<p><strong>{L['tags']}:</strong> {e(', '.join(c['tags']))}</p>")
     faqs = []
     for kind, title, data in c["sections"]:
         if kind == "faq":
@@ -371,24 +384,23 @@ def page_html(c, shop, noindex):
         elif kind == "products":
             desc, items = data
             if not title:
-                out.append(f"<h2>Products in {e(c['name'])}</h2>")
+                out.append(f"<h2>{e(L['products'].format(name=c['name']))}</h2>")
             out.append(desc)
             out.append("<ul>" + "".join(f"<li><strong>{e(n)}</strong>{(' – ' + e(h)) if h else ''}</li>" for n, h in items) + "</ul>")
         elif kind == "links":
-            out.append("<p><strong>Related categories:</strong> " + e(", ".join(data)) + "</p>")
+            out.append(f"<p><strong>{L['related']}:</strong> " + e(", ".join(data)) + "</p>")
         elif kind == "usps":
             sub, pts = data
             if sub:
                 out.append(f"<p>{e(plain(sub))}</p>")
             out.append("<ul>" + "".join(f"<li>{e(p)}</li>" for p in pts) + "</ul>")
     for title, qa in faqs:
-        out.append(f"<h2>Questions answered on the {e(c['name'])} category page (before ordering)</h2>")
+        out.append(f"<h2>{e(L['faq'].format(name=c['name']))}</h2>")
         if title:
             out.append(f"<p><em>{e(title)}</em></p>")
         for q, a in qa:
             out.append(f"<h3>{e(q)}</h3>{a}")
-    out.append(f"<hr><p><small>Generated from Contentful (entry {e(c['id'])}) for Anna's knowledge base. "
-               f"Always refer customers to the category page above.</small></p></body></html>")
+    out.append(f"<hr><p><small>{e(L['footer'].format(id=c['id']))}</small></p></body></html>")
     return "\n".join(out)
 
 
@@ -432,7 +444,11 @@ def main():
     for shop in shops:
         print(f"== {shop['name']} ({shop['locale']})")
         b = Builder(src, shop, filters, report)
-        live = None if (a.fixture or a.no_live_check) else fetch_live_slugs(shop["live_sitemap"], shop["url_prefix"])
+        # live check: only build categories that exist in the shop's own sitemap. A shop without its own category
+        # sitemap (e.g. Connect) can point to another shop's sitemap via live_sitemap + live_sitemap_prefix.
+        live = None
+        if not (a.fixture or a.no_live_check) and shop.get("live_sitemap"):
+            live = fetch_live_slugs(shop["live_sitemap"], shop.get("live_sitemap_prefix", shop["url_prefix"]))
         pages = src.category_pages(shop["locale"])
         seen, built = set(), []
         for p in sorted(pages, key=lambda x: x["id"]):
