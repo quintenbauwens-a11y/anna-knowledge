@@ -438,15 +438,40 @@ def page_html(c, shop, noindex):
     return "\n".join(out)
 
 
+LIVE_STATUS = {}  # live sitemap url -> "OK (n categories)" or the error, shown in report.html
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+    "Accept": "application/xml,text/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en;q=0.9",
+}
+
+
 def fetch_live_slugs(url, prefix):
-    try:
-        r = requests.get(url, timeout=60, headers={"User-Agent": "anna-knowledge-builder"})
-        r.raise_for_status()
-        locs = re.findall(r"<loc>\s*([^<]+?)\s*</loc>", r.text)
-        return {l[len(prefix) + 1:].strip("/") for l in locs if l.startswith(prefix + "/")}
-    except Exception as ex:  # noqa
-        print(f"  ! could not read live sitemap {url}: {ex} — building without that check")
+    """Slugs listed in the live shop's category sitemap, or None if it can't be read (then no live check)."""
+    if url not in LIVE_STATUS:
+        _download_live(url)
+    locs = LIVE_STATUS[url][1]
+    if locs is None:
         return None
+    return {l[len(prefix) + 1:].strip("/") for l in locs if l.startswith(prefix + "/")}
+
+
+def _download_live(url):
+    err = None
+    for attempt in range(3):
+        try:
+            r = requests.get(url, timeout=60, headers=BROWSER_HEADERS)
+            r.raise_for_status()
+            locs = re.findall(r"<loc>\s*([^<]+?)\s*</loc>", r.text)
+            if not locs:
+                raise ValueError(f"no <loc> entries (HTTP {r.status_code}, {len(r.text)} bytes)")
+            LIVE_STATUS[url] = (f"OK ({len(locs)} categories)", locs)
+            return
+        except Exception as ex:  # noqa
+            err = f"{type(ex).__name__}: {ex}"[:200]
+            time.sleep(3 * (attempt + 1))
+    LIVE_STATUS[url] = (f"FAILED – {err} – built WITHOUT live check", None)
+    print(f"  ! could not read live sitemap {url}: {err} — building without that check")
 
 
 def main():
@@ -536,6 +561,12 @@ def main():
     e = html.escape
     rep = [f"<!doctype html><html><head><meta charset='utf-8'><meta name='robots' content='noindex'><title>Build report</title></head><body>",
            f"<h1>Build report – {today}</h1>"]
+    rep.append("<h2>Live shop check</h2><ul>")
+    for shop in shops:
+        u = shop.get("live_sitemap")
+        st = LIVE_STATUS.get(u, ("not checked",))[0] if u else "no live sitemap configured"
+        rep.append(f"<li>{html.escape(shop['id'])}: {html.escape(st)}</li>")
+    rep.append("</ul>")
     if report.errors:
         rep.append(f"<h2>Shops that failed this run ({len(report.errors)}) – previous version kept</h2><ul>")
         rep += [f"<li>{html.escape(i)}: {html.escape(m)}</li>" for i, m in report.errors]
