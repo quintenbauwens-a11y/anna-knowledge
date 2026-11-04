@@ -19,7 +19,10 @@
         "country_name": "Ireland",
         "shop_country": "Ireland",
         "shop_phone": "+353 818 882 249"
-      }
+      },
+      "products": true,
+      "products_respect_unavailable": false,
+      "_products_note": "Products: built from Contentful (URL for en-IE + not noindex). The Irish V4 shop ignores the 'Unavailable' per-shop condition, so we do too (respect_unavailable=false)."
     },
     {
       "id": "it-it",
