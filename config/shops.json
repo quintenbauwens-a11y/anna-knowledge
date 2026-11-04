@@ -62,6 +62,48 @@
         "shop_phone": "+39 06 9480 9947"
       },
       "_note": "Connect = straight copy of the IT end-label content: visibility rules use the end-label domain, only the URLs differ."
+    },
+    {
+      "id": "es-es",
+      "enabled": true,
+      "name": "Helloprint España",
+      "locale": "es-ES",
+      "lang": "es",
+      "url_prefix": "https://www.helloprint.com/es-es",
+      "domains": [
+        "helloprint.es"
+      ],
+      "live_sitemap": "https://www.helloprint.com/es-es/sitemap_collections_1.xml",
+      "template_vars": {
+        "shop_name": "HelloPrint",
+        "shop_url": "www.helloprint.com/es-es",
+        "country_code": "España",
+        "country_name": "España",
+        "shop_country": "España",
+        "shop_phone": "+34 960 13 67 57"
+      }
+    },
+    {
+      "id": "es-connect",
+      "enabled": true,
+      "name": "Helloprint Connect España",
+      "locale": "es-ES",
+      "lang": "es",
+      "url_prefix": "https://connect.helloprint.es",
+      "domains": [
+        "helloprint.es"
+      ],
+      "live_sitemap": "https://www.helloprint.com/es-es/sitemap_collections_1.xml",
+      "live_sitemap_prefix": "https://www.helloprint.com/es-es",
+      "template_vars": {
+        "shop_name": "HelloPrint Connect",
+        "shop_url": "connect.helloprint.es",
+        "country_code": "España",
+        "country_name": "España",
+        "shop_country": "España",
+        "shop_phone": "+34 960 13 67 57"
+      },
+      "_note": "Connect = straight copy of the ES end-label content: visibility rules use the end-label domain, only the URLs differ."
     }
   ]
 }

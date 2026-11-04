@@ -24,5 +24,18 @@
     "\\bquanto tempo ci vuole\\b",
     "\\bopzioni di consegna\\b",
     "\\bconsegna (express|espressa|rapida|veloce)\\b"
+  ],
+  "es": [
+    "\\bcu[aá]ndo (llega|llegar[aá]|llegan|llegar[aá]n|recibir[eé]|recibo|me llega|ser[aá] entregad|ser[aá]n entregad)",
+    "\\bd[oó]nde est[aá] mi\\b",
+    "\\bseguimiento\\b|\\brastre(o|ar)\\b|\\btracking\\b",
+    "\\bestado (del|de mi|de su) pedido\\b",
+    "\\bfecha de entrega\\b",
+    "\\bcancel|\\banular\\b",
+    "\\b(modificar|cambiar)\\b.*\\bpedido\\b",
+    "\\b(plazos?|tiempos?) de (entrega|env[ií]o)\\b",
+    "\\bcu[aá]nto (tarda|tardan|se tarda|tiempo (tarda|tardan|se tarda|lleva))\\b",
+    "\\bopciones de (entrega|env[ií]o)\\b",
+    "\\b(entrega|env[ií]o) (expr[eé]s|express|urgente|r[aá]pid[oa])\\b"
   ]
 }
