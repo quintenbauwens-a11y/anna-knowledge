@@ -202,17 +202,24 @@ class Builder:
         self.src, self.shop, self.report = src, shop, report
         self.loc = shop["locale"]
         self.domains = {d.lower() for d in shop["domains"]}
+        self.touched = []
         self.patterns = [re.compile(p, re.I) for p in filters.get(shop["lang"], [])]
 
+    def _touch(self, e):
+        """Remember the last-published time of every entry used for the current page (for the sitemap lastmod)."""
+        if e and e.get("updated"):
+            self.touched.append(e["updated"])
+        return e
+
     def get1(self, i):
-        return self.src.get([i], self.loc).get(i) if i else None
+        return self._touch(self.src.get([i], self.loc).get(i)) if i else None
 
     def getmany(self, ids):
         found = self.src.get(ids, self.loc)
         for i, e in found.items():
             if e is None:
                 self.report.missing.add(i)
-        return [found[i] for i in ids if found.get(i)]
+        return [self._touch(found[i]) for i in ids if found.get(i)]
 
     def visible(self, block):
         cond_ids = link_ids(block["fields"].get("shouldShowPerShop"))
@@ -317,6 +324,7 @@ class Builder:
         return None
 
     def build_page(self, page):
+        self.touched = [page["updated"]] if page.get("updated") else []
         f = page["fields"]
         name = self.t(f.get("searchName") or clean_name(f.get("title")))
         slug = f.get("curl")
@@ -331,7 +339,8 @@ class Builder:
         tags = [self.t(x) for x in (f.get("searchTags") or []) if x]
         return {"name": name, "slug": slug, "url": f"{self.shop['url_prefix']}/{slug}", "path": self.path(page),
                 "summary": self.t(f.get("meta_description") or ""), "tags": tags, "sections": sections,
-                "updated": page.get("updated"), "id": page["id"]}
+                # newest publish date of the page OR anything on it (blocks, FAQs, products, ...)
+                "updated": max(self.touched) if self.touched else None, "id": page["id"]}
 
 
 def page_html(c, shop, noindex):
