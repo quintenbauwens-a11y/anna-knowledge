@@ -190,6 +190,9 @@ def plain(text):
     return re.sub(r"\s*;\s*$", "", t).replace(" ;", ";")
 
 
+INTERNAL_NAME = re.compile(r"^\s*CARD\s*-", re.I)
+
+
 def clean_name(s):
     return re.sub(r"^\s*(PLP|PC|BI|D|S|V)\s*-\s*", "", s or "").strip()
 
@@ -203,7 +206,9 @@ class Builder:
         self.loc = shop["locale"]
         self.domains = {d.lower() for d in shop["domains"]}
         self.touched = []
-        self.patterns = [re.compile(p, re.I) for p in filters.get(shop["lang"], [])]
+        # shop language + English (some non-English pages still contain English FAQs)
+        pats = filters.get(shop["lang"], []) + ([] if shop["lang"] == "en" else filters.get("en", []))
+        self.patterns = [re.compile(p, re.I) for p in pats]
 
     def _touch(self, e):
         """Remember the last-published time of every entry used for the current page (for the sitemap lastmod)."""
@@ -278,6 +283,14 @@ class Builder:
                 if p["type"] == "bundleItem" and not self.visible(p):
                     continue
                 name = self.t(p["fields"].get("name") or p["fields"].get("title") or "")
+                if INTERNAL_NAME.match(name):
+                    # internal card label (e.g. "CARD - Flags PLP - Beach flags"): use the linked page's name, else drop
+                    target = (link_ids(p["fields"].get("link")) or [None])[0]
+                    tp = self.get1(target) if target else None
+                    name = tp and (tp["fields"].get("searchName") or clean_name(tp["fields"].get("title")))
+                    name = self.t(re.sub(r"\s*\([^)]*\)", "", name).strip()) if name else ""
+                    if not name or INTERNAL_NAME.match(name):
+                        continue
                 if not name:
                     continue
                 items.append((name, plain(md_to_html(self.t(p["fields"].get("highlights") or "")))))
