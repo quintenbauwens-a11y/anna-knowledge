@@ -3,7 +3,8 @@
 Builds clean, text-only pages from Helloprint's Contentful content so Anna (Engaige) can sync them
 through a **Sitemap knowledge folder** instead of CSV uploads.
 
-**Now included:** category pages (Ireland pilot). Help-centre FAQs and products can be added later.
+**Now included:** category pages for all shops, and **product pages** for shops with `"products": true` in
+`config/shops.json` (Ireland first). Help-centre FAQs can be added later.
 
 ## How it works
 1. Every night (and whenever `build.py` or `config/` changes) GitHub runs `build.py`.
@@ -16,6 +17,15 @@ through a **Sitemap knowledge folder** instead of CSV uploads.
 5. Every page links to the real helloprint.com category page; Anna should cite that link.
 6. `report.html` lists what was left out and why. A copy of every build is saved in `snapshot/`.
 
+## Products (`products.py`)
+- One page per live product: `products/<shop>/<product-url>/`, sitemap `products/<shop>/sitemap.xml`.
+- Live = published in Contentful + has a URL for the shop's language + not `noindex`.
+  Shops with `"products_respect_unavailable": true` also skip products whose *Unavailable* condition matches the
+  shop (the Irish V4 shop ignores that condition, so Ireland has it set to `false`).
+- On the page: name, real product link, category, description, specifications, advantages, print options
+  (colours, print colours, print methods, print sizes), file guidelines, product FAQs (delivery/status questions
+  filtered out) and content blocks. **Not** on the page: prices, stock, delivery dates (they are not in Contentful).
+
 ## What goes on a page
 Category name, real URL, category path, summary, search terms, the text blocks, product lists
 (names + highlights), related categories and the category-page FAQs.
@@ -25,6 +35,7 @@ Skipped on purpose: filters, reviews, banners, promo cards, blog teasers.
 ## Change things
 | I want to… | Do this |
 |---|---|
+| Turn on products for a shop | In `config/shops.json` add `"products": true` to that shop. Then add `products/<shop>/sitemap.xml` in Engaige. |
 | Add a shop (e.g. Italy) | In `config/shops.json` set `"enabled": true` for that shop (or copy an entry). Then add its sitemap URL in Engaige. |
 | Keep/drop certain FAQs | Edit the patterns in `config/faq_filters.json`. Dropped FAQs are listed in `report.html`. |
 | Rebuild now | GitHub → **Actions** → **Build knowledge site** → **Run workflow**. |

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Anna knowledge site builder — categories.
+Anna knowledge site builder — categories (+ products for shops with "products": true, see products.py).
 
 Reads Helloprint category pages from Contentful (Content Delivery API, published content only),
 keeps the blocks that are visible on each shop, cleans them up and writes one plain HTML page per
@@ -85,6 +85,18 @@ class CDASource:
             if skip >= data["total"] or not data["items"]:
                 return out
 
+    def entries(self, content_type, locale, page_size=30):
+        """All published entries of one content type for one locale (linked entries 2 levels deep are cached too)."""
+        out, skip = [], 0
+        while True:
+            data = self._get({"content_type": content_type, "locale": locale, "include": 2, "limit": page_size,
+                              "skip": skip, "order": "sys.id"})
+            self._absorb(data, locale)
+            out += [self._norm(e) for e in data["items"]]
+            skip += len(data["items"])
+            if skip >= data["total"] or not data["items"]:
+                return out
+
     def get(self, ids, locale):
         missing = [i for i in dict.fromkeys(ids) if (locale, i) not in self.cache]
         for k in range(0, len(missing), 100):
@@ -125,6 +137,9 @@ class FixtureSource:
                 out.append(r)
         return out
 
+    def entries(self, content_type, locale, page_size=30):
+        return [r for r in (self._resolve(e, locale) for e in self.store.values()) if r and r["type"] == content_type]
+
     def get(self, ids, locale):
         return {i: self._resolve(self.store.get(i), locale) for i in ids}
 
@@ -153,6 +168,7 @@ class Report:
         self.filtered, self.skipped_pages, self.unknown_blocks, self.template_vars, self.missing = [], [], {}, {}, set()
         self.written = []
         self.errors = []
+        self.product_stats = {}  # shop id -> {reason: count}
 
 
 def fill_template(text, shop, report, where):
@@ -438,6 +454,83 @@ def page_html(c, shop, noindex):
     return "\n".join(out)
 
 
+def blocks_html(sections, shop):
+    """Content blocks of a product page (same block types as category pages), FAQs inline under their own title."""
+    e, L, out = html.escape, LABELS.get(shop.get("lang"), LABELS["en"]), []
+    for kind, title, data in sections:
+        if title:
+            out.append(f"<h2>{e(title)}</h2>")
+        if kind == "text":
+            out.append(data)
+        elif kind == "products":
+            desc, items = data
+            out.append(desc)
+            out.append("<ul>" + "".join(f"<li><strong>{e(n)}</strong>{(' – ' + e(h)) if h else ''}</li>" for n, h in items) + "</ul>")
+        elif kind == "links":
+            out.append(f"<p><strong>{L['related']}:</strong> " + e(", ".join(data)) + "</p>")
+        elif kind == "usps":
+            sub, pts = data
+            if sub:
+                out.append(f"<p>{e(plain(sub))}</p>")
+            out.append("<ul>" + "".join(f"<li>{e(p)}</li>" for p in pts) + "</ul>")
+        elif kind == "faq":
+            for q, a in data:
+                out.append(f"<h3>{e(q)}</h3>{a}")
+    return "\n".join(out)
+
+
+def build_products(src, shop, b, report, out_dir, site_url, today):
+    """One page per live product + products/<shop>/sitemap.xml. Returns the number of pages written."""
+    import products as P
+    pb = P.ProductBuilder(b, md_to_html, plain, link_ids, as_bool)
+    stats, built, seen = {}, [], set()
+    for ctype in P.PRODUCT_TYPES:  # PCM products first; an old-style product with the same URL is skipped
+        for e in sorted(src.entries(ctype, shop["locale"]), key=lambda x: x["id"]):
+            ok, why = pb.is_live(e, report)
+            if why:
+                stats[why] = stats.get(why, 0) + 1
+            if not ok:
+                continue
+            slug = e["fields"]["url"].strip("/")
+            if not slug or "/" in slug or slug in seen:
+                stats["duplicate or unusable URL"] = stats.get("duplicate or unusable URL", 0) + 1
+                continue
+            seen.add(slug)
+            c = pb.build(e)
+            if not c["name"] or not (c["desc"] or c["specs"] or c["options"] or c["sections"]):
+                stats["no content"] = stats.get("no content", 0) + 1
+                continue
+            d = os.path.join(out_dir, "products", shop["id"], slug)
+            os.makedirs(d, exist_ok=True)
+            with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
+                fh.write(P.product_html(c, shop, lambda secs, name: blocks_html(secs, shop)))
+            built.append(c)
+    base = f"{site_url}/products/{shop['id']}"
+    with open(os.path.join(out_dir, "products", shop["id"], "sitemap.xml"), "w", encoding="utf-8") as fh:
+        fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+        for c in sorted(built, key=lambda x: x["slug"]):
+            lm = (c["updated"] or today)[:10]
+            fh.write(f"  <url><loc>{xml_escape(base + '/' + c['slug'] + '/')}</loc><lastmod>{lm}</lastmod></url>\n")
+        fh.write("</urlset>\n")
+    stats["built"] = len(built)
+    report.product_stats[shop["id"]] = stats
+    return len(built), base + "/sitemap.xml"
+
+
+def keep_previous(kind, shop_id, out_dir, report, ex):
+    import shutil, traceback
+    traceback.print_exc()
+    report.errors.append((f"{shop_id} ({kind})", f"{type(ex).__name__}: {ex}"))
+    prev = os.path.join(ROOT, "snapshot", kind, shop_id)
+    dst = os.path.join(out_dir, kind, shop_id)
+    shutil.rmtree(dst, ignore_errors=True)
+    if os.path.isdir(prev):
+        shutil.copytree(prev, dst)
+        print(f"   ! {kind} build failed for {shop_id} — kept the previous version from snapshot/")
+    else:
+        print(f"   ! {kind} build failed for {shop_id} — no previous version available")
+
+
 LIVE_STATUS = {}  # live sitemap url -> "OK (n categories)" or the error, shown in report.html
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
@@ -498,7 +591,7 @@ def main():
     today = dt.date.today().isoformat()
     os.makedirs(a.out, exist_ok=True)
     open(os.path.join(a.out, ".nojekyll"), "w").close()
-    index_rows = []
+    index_rows, product_rows = [], []
 
     for shop in shops:
         try:
@@ -545,17 +638,14 @@ def main():
             print(f"   {len(built)} category pages written")
             index_rows.append((shop, len(built), base + "/sitemap.xml"))
         except Exception as ex:  # one shop failing must not take the whole site down
-            import shutil, traceback
-            traceback.print_exc()
-            report.errors.append((shop["id"], f"{type(ex).__name__}: {ex}"))
-            prev = os.path.join(ROOT, "snapshot", "categories", shop["id"])
-            dst = os.path.join(a.out, "categories", shop["id"])
-            shutil.rmtree(dst, ignore_errors=True)
-            if os.path.isdir(prev):
-                shutil.copytree(prev, dst)
-                print(f"   ! build failed for {shop['id']} — kept the previous version from snapshot/")
-            else:
-                print(f"   ! build failed for {shop['id']} — no previous version available")
+            keep_previous("categories", shop["id"], a.out, report, ex)
+        if shop.get("products") and not a.only:
+            try:
+                n, url = build_products(src, shop, Builder(src, shop, filters, report), report, a.out, a.site_url, today)
+                print(f"   {n} product pages written")
+                product_rows.append((shop, n, url))
+            except Exception as ex:
+                keep_previous("products", shop["id"], a.out, report, ex)
 
     # index + report
     e = html.escape
@@ -571,6 +661,11 @@ def main():
         rep.append(f"<h2>Shops that failed this run ({len(report.errors)}) – previous version kept</h2><ul>")
         rep += [f"<li>{html.escape(i)}: {html.escape(m)}</li>" for i, m in report.errors]
         rep.append("</ul>")
+    if report.product_stats:
+        rep.append("<h2>Products</h2><ul>")
+        for sid, st in report.product_stats.items():
+            rep.append(f"<li><strong>{e(sid)}</strong>: " + ", ".join(f"{e(k)}: {v}" for k, v in st.items()) + "</li>")
+        rep.append("</ul>")
     rep.append(f"<h2>FAQs left out by the filter ({len(report.filtered)})</h2><p>Edit <code>config/faq_filters.json</code> to change this.</p><ul>")
     rep += [f"<li>[{e(s)}] <strong>{e(p)}</strong>: {e(q)} <small>(rule: <code>{e(r)}</code>)</small></li>" for s, p, q, r in report.filtered]
     rep.append(f"</ul><h2>Category pages not built ({len(report.skipped_pages)})</h2><ul>")
@@ -584,6 +679,7 @@ def main():
         fh.write("<!doctype html><html><head><meta charset='utf-8'><meta name='robots' content='noindex'><title>Anna knowledge</title></head><body>"
                  f"<h1>Anna knowledge site</h1><p>Last build: {today}. <a href='report.html'>Build report</a></p><ul>"
                  + "".join(f"<li>{e(s['name'])} – categories: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in index_rows)
+                 + "".join(f"<li>{e(s['name'])} – <strong>products</strong>: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in product_rows)
                  + "</ul></body></html>")
     print(f"Filtered FAQs: {len(report.filtered)} | skipped pages: {len(report.skipped_pages)} | unknown blocks: {report.unknown_blocks} | unknown vars: {report.template_vars}")
 
