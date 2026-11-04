@@ -152,6 +152,7 @@ class Report:
     def __init__(self):
         self.filtered, self.skipped_pages, self.unknown_blocks, self.template_vars, self.missing = [], [], {}, {}, set()
         self.written = []
+        self.errors = []
 
 
 def fill_template(text, shop, report, where):
@@ -369,6 +370,22 @@ LABELS = {  # page labels per language (shops.json "lang"); add a language here 
            "tags": "También buscado como", "products": "Productos en {name}", "related": "Categorías relacionadas",
            "faq": "Preguntas sobre la página de categoría {name} (antes de pedir)",
            "footer": "Generado desde Contentful (entrada {id}) para la base de conocimiento de Anna. Remite siempre al cliente a la página de categoría indicada arriba."},
+    "nl": {"title": "categorie", "page": "Categoriepagina op {shop}", "path": "Categoriepad", "summary": "Samenvatting",
+           "tags": "Ook gezocht als", "products": "Producten in {name}", "related": "Gerelateerde categorieën",
+           "faq": "Vragen op de categoriepagina {name} (voor het bestellen)",
+           "footer": "Gegenereerd uit Contentful (entry {id}) voor de kennisbank van Anna. Verwijs de klant altijd naar de categoriepagina hierboven."},
+    "fr": {"title": "catégorie", "page": "Page catégorie sur {shop}", "path": "Chemin de la catégorie", "summary": "Résumé",
+           "tags": "Aussi recherché comme", "products": "Produits dans {name}", "related": "Catégories associées",
+           "faq": "Questions sur la page catégorie {name} (avant la commande)",
+           "footer": "Généré depuis Contentful (entrée {id}) pour la base de connaissances d'Anna. Renvoyez toujours le client vers la page catégorie ci-dessus."},
+    "de": {"title": "Kategorie", "page": "Kategorieseite bei {shop}", "path": "Kategoriepfad", "summary": "Zusammenfassung",
+           "tags": "Auch gesucht als", "products": "Produkte in {name}", "related": "Verwandte Kategorien",
+           "faq": "Fragen auf der Kategorieseite {name} (vor der Bestellung)",
+           "footer": "Aus Contentful generiert (Eintrag {id}) für Annas Wissensdatenbank. Verweise Kunden immer auf die Kategorieseite oben."},
+    "sv": {"title": "kategori", "page": "Kategorisida på {shop}", "path": "Kategorisökväg", "summary": "Sammanfattning",
+           "tags": "Söks även som", "products": "Produkter i {name}", "related": "Relaterade kategorier",
+           "faq": "Frågor på kategorisidan {name} (före beställning)",
+           "footer": "Genererad från Contentful (post {id}) för Annas kunskapsbas. Hänvisa alltid kunden till kategorisidan ovan."},
 }
 
 
@@ -459,53 +476,70 @@ def main():
     index_rows = []
 
     for shop in shops:
-        print(f"== {shop['name']} ({shop['locale']})")
-        b = Builder(src, shop, filters, report)
-        # live check: only build categories that exist in the shop's own sitemap. A shop without its own category
-        # sitemap (e.g. Connect) can point to another shop's sitemap via live_sitemap + live_sitemap_prefix.
-        live = None
-        if not (a.fixture or a.no_live_check) and shop.get("live_sitemap"):
-            live = fetch_live_slugs(shop["live_sitemap"], shop.get("live_sitemap_prefix", shop["url_prefix"]))
-        pages = src.category_pages(shop["locale"])
-        seen, built = set(), []
-        for p in sorted(pages, key=lambda x: x["id"]):
-            slug, f = p["fields"].get("curl"), p["fields"]
-            if not slug or "/" in slug:
-                continue
-            if only and slug not in only:
-                continue
-            if (f.get("robots_content") or "").startswith("noindex"):
-                report.skipped_pages.append((shop["id"], slug, "noindex in Contentful")); continue
-            if live is not None and slug not in live:
-                report.skipped_pages.append((shop["id"], slug, "not in the live shop sitemap")); continue
-            if slug in seen:
-                report.skipped_pages.append((shop["id"], slug, "duplicate slug")); continue
-            seen.add(slug)
-            c = b.build_page(p)
-            if not c["sections"] and not c["summary"]:
-                report.skipped_pages.append((shop["id"], slug, "no content")); continue
-            d = os.path.join(a.out, "categories", shop["id"], slug)
-            os.makedirs(d, exist_ok=True)
-            with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
-                fh.write(page_html(c, shop, noindex=a.noindex))
-            built.append(c)
-        # sitemap
-        smdir = os.path.join(a.out, "categories", shop["id"])
-        os.makedirs(smdir, exist_ok=True)
-        base = f"{a.site_url}/categories/{shop['id']}"
-        with open(os.path.join(smdir, "sitemap.xml"), "w", encoding="utf-8") as fh:
-            fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-            for c in sorted(built, key=lambda x: x["slug"]):
-                lm = (c["updated"] or today)[:10]
-                fh.write(f"  <url><loc>{xml_escape(base + '/' + c['slug'] + '/')}</loc><lastmod>{lm}</lastmod></url>\n")
-            fh.write("</urlset>\n")
-        print(f"   {len(built)} category pages written")
-        index_rows.append((shop, len(built), base + "/sitemap.xml"))
+        try:
+            print(f"== {shop['name']} ({shop['locale']})")
+            b = Builder(src, shop, filters, report)
+            # live check: only build categories that exist in the shop's own sitemap. A shop without its own category
+            # sitemap (e.g. Connect) can point to another shop's sitemap via live_sitemap + live_sitemap_prefix.
+            live = None
+            if not (a.fixture or a.no_live_check) and shop.get("live_sitemap"):
+                live = fetch_live_slugs(shop["live_sitemap"], shop.get("live_sitemap_prefix", shop["url_prefix"]))
+            pages = src.category_pages(shop["locale"])
+            seen, built = set(), []
+            for p in sorted(pages, key=lambda x: x["id"]):
+                slug, f = p["fields"].get("curl"), p["fields"]
+                if not slug or "/" in slug:
+                    continue
+                if only and slug not in only:
+                    continue
+                if (f.get("robots_content") or "").startswith("noindex"):
+                    report.skipped_pages.append((shop["id"], slug, "noindex in Contentful")); continue
+                if live is not None and slug not in live:
+                    report.skipped_pages.append((shop["id"], slug, "not in the live shop sitemap")); continue
+                if slug in seen:
+                    report.skipped_pages.append((shop["id"], slug, "duplicate slug")); continue
+                seen.add(slug)
+                c = b.build_page(p)
+                if not c["sections"] and not c["summary"]:
+                    report.skipped_pages.append((shop["id"], slug, "no content")); continue
+                d = os.path.join(a.out, "categories", shop["id"], slug)
+                os.makedirs(d, exist_ok=True)
+                with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
+                    fh.write(page_html(c, shop, noindex=a.noindex))
+                built.append(c)
+            # sitemap
+            smdir = os.path.join(a.out, "categories", shop["id"])
+            os.makedirs(smdir, exist_ok=True)
+            base = f"{a.site_url}/categories/{shop['id']}"
+            with open(os.path.join(smdir, "sitemap.xml"), "w", encoding="utf-8") as fh:
+                fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+                for c in sorted(built, key=lambda x: x["slug"]):
+                    lm = (c["updated"] or today)[:10]
+                    fh.write(f"  <url><loc>{xml_escape(base + '/' + c['slug'] + '/')}</loc><lastmod>{lm}</lastmod></url>\n")
+                fh.write("</urlset>\n")
+            print(f"   {len(built)} category pages written")
+            index_rows.append((shop, len(built), base + "/sitemap.xml"))
+        except Exception as ex:  # one shop failing must not take the whole site down
+            import shutil, traceback
+            traceback.print_exc()
+            report.errors.append((shop["id"], f"{type(ex).__name__}: {ex}"))
+            prev = os.path.join(ROOT, "snapshot", "categories", shop["id"])
+            dst = os.path.join(a.out, "categories", shop["id"])
+            shutil.rmtree(dst, ignore_errors=True)
+            if os.path.isdir(prev):
+                shutil.copytree(prev, dst)
+                print(f"   ! build failed for {shop['id']} — kept the previous version from snapshot/")
+            else:
+                print(f"   ! build failed for {shop['id']} — no previous version available")
 
     # index + report
     e = html.escape
     rep = [f"<!doctype html><html><head><meta charset='utf-8'><meta name='robots' content='noindex'><title>Build report</title></head><body>",
            f"<h1>Build report – {today}</h1>"]
+    if report.errors:
+        rep.append(f"<h2>Shops that failed this run ({len(report.errors)}) – previous version kept</h2><ul>")
+        rep += [f"<li>{html.escape(i)}: {html.escape(m)}</li>" for i, m in report.errors]
+        rep.append("</ul>")
     rep.append(f"<h2>FAQs left out by the filter ({len(report.filtered)})</h2><p>Edit <code>config/faq_filters.json</code> to change this.</p><ul>")
     rep += [f"<li>[{e(s)}] <strong>{e(p)}</strong>: {e(q)} <small>(rule: <code>{e(r)}</code>)</small></li>" for s, p, q, r in report.filtered]
     rep.append(f"</ul><h2>Category pages not built ({len(report.skipped_pages)})</h2><ul>")
