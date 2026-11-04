@@ -9,8 +9,8 @@
     "\\bcancel",
     "\\b(change|modify|amend|edit)\\b.*\\b(my|an|the) order\\b",
     "\\bdelivery (time|times|options)\\b",
-    "\\bhow long (does|will|do)\\b.*\\b(take|deliver|delivery|arrive)\\b",
-    "\\b(express|fast|fastest|next.day|same.day) delivery\\b"
+    "\\b(express|fast|fastest|next.day|same.day) delivery\\b",
+    "\\bhow long (does|will|do)\\b(?!.*\\b(set ?up|assembl|install|last|mont|instal|dura)).*\\b(take|deliver|delivery|arrive)\\b"
   ],
   "it": [
     "\\bquando (arriva|arriverà|arriveranno|riceverò|ricevo|verrà consegnat|verranno consegnat|sarà consegnat|saranno consegnat)",
@@ -34,8 +34,54 @@
     "\\bcancel|\\banular\\b",
     "\\b(modificar|cambiar)\\b.*\\bpedido\\b",
     "\\b(plazos?|tiempos?) de (entrega|env[ií]o)\\b",
-    "\\bcu[aá]nto (tarda|tardan|se tarda|tiempo (tarda|tardan|se tarda|lleva))\\b",
     "\\bopciones de (entrega|env[ií]o)\\b",
-    "\\b(entrega|env[ií]o) (expr[eé]s|express|urgente|r[aá]pid[oa])\\b"
+    "\\b(entrega|env[ií]o) (expr[eé]s|express|urgente|r[aá]pid[oa])\\b",
+    "\\bcu[aá]nto (tarda|tardan|se tarda|tiempo (tarda|tardan|se tarda|lleva))\\b(?!.*\\b(set ?up|assembl|install|last|mont|instal|dura))",
+    "\\bplazos? de (producci[oó]n|fabricaci[oó]n)\\b"
+  ],
+  "nl": [
+    "\\bwanneer\\b.*\\b(geleverd|bezorgd|verzonden|ontvang|binnen|aan(komt|komen))\\b",
+    "\\bwaar is mijn\\b",
+    "\\btrack ?(&|en) ?trace\\b|\\btracking\\b|\\b(bestelling|pakket|zending) (volgen|traceren)\\b",
+    "\\b(status|stand) van (mijn|je|uw|de) (bestelling|order)\\b",
+    "\\b(lever|leverings|bezorg|verzend)(tijd|tijden|datum|termijn|opties|mogelijkheden)\\b",
+    "\\bhoe (lang|snel)\\b(?!.*\\b(opzetten|opbouwen|monter|mee|houdbaar)\\b).*\\b(duurt|duren|geleverd|bezorgd|ontvang|binnen)\\b",
+    "\\bannul",
+    "\\b(spoed|express|expres|snelle|snelste) ?(levering|bezorging)\\b",
+    "\\b(wijzig|wijzigen|aanpassen|veranderen)\\b.*\\b(bestelling|order)\\b|\\b(bestelling|order)\\b.*\\b(wijzigen|aanpassen|veranderen)\\b"
+  ],
+  "fr": [
+    "\\bquand\\b.*\\b(recevrai|reçois|recevoir|arrive|arrivera|arriveront|livr[ée]e?s?|exp[ée]di[ée]e?s?)\\b",
+    "\\bo[uù] (est|en est) ma commande\\b",
+    "\\bsuivi\\b|\\bsuivre (ma|mon|le|la) (commande|colis)\\b|\\btracking\\b",
+    "\\b([ée]tat|statut) de (ma|la|votre) commande\\b",
+    "\\bdates? de livraison\\b",
+    "\\b(d[ée]lais?|temps|options?|modes?) de (livraison|production|fabrication|exp[ée]dition)\\b",
+    "\\bcombien de temps\\b(?!.*\\b(monter|montage|installer|dure|durer)\\b).*\\b(livr|recev|exp[ée]di|faut|prend|production|fabrication|impression|imprimer)",
+    "\\bannul",
+    "\\b(modifier|changer)\\b.*\\bcommande\\b",
+    "\\blivraison (express|rapide|urgente)\\b"
+  ],
+  "de": [
+    "\\bwann\\b.*\\b(kommt|kommen|erhalte|erhalten|bekomme|geliefert|zugestellt|versendet|verschickt|ankommt|ankommen)\\b",
+    "\\bwo ist meine\\b",
+    "\\bsendungsverfolgung\\b|\\btracking\\b|\\b(bestellung|paket|sendung) verfolgen\\b",
+    "\\bbestellstatus\\b|\\bstatus (meiner|der|deiner|ihrer) bestellung\\b",
+    "\\b(liefer|versand|zustell|produktions)(zeit|zeiten|datum|termin|dauer|optionen)\\b",
+    "\\bwie (lange|schnell)\\b(?!.*\\b(aufbau|aufbauen|montage|montieren|hält|halten)\\b).*\\b(dauert|dauern|braucht|brauchen|geliefert|erhalte|ankommt)\\b",
+    "\\bstornier|\\bannullier",
+    "\\b(ändern|änderung|anpassen)\\b.*\\bbestellung\\b|\\bbestellung\\b.*\\b(ändern|anpassen)\\b",
+    "\\b(express|eil|schnell)(versand|lieferung)\\b|\\bexpress-lieferung\\b"
+  ],
+  "sv": [
+    "\\bnär\\b.*\\b(kommer|får jag|levereras|skickas|anländer)\\b",
+    "\\bvar är min\\b",
+    "\\bspåra|\\bspårning\\b|\\btracking\\b",
+    "\\b(status (på|för) (min|din) (beställning|order))\\b|\\borderstatus\\b",
+    "\\b(leverans|frakt)(tid|tiden|tider|datum|alternativ)\\b",
+    "\\bhur (lång tid|snabbt)\\b(?!.*\\b(montera|sätta upp|håller)\\b).*\\b(tar|levere|leverans|frakt|få)\\b",
+    "\\bavbryt|\\bavboka|\\bannuller",
+    "\\b(ändra|ändring)\\b.*\\b(beställning|order)\\b",
+    "\\bexpressleverans\\b|\\bsnabb leverans\\b"
   ]
 }
