@@ -365,6 +365,10 @@ LABELS = {  # page labels per language (shops.json "lang"); add a language here 
            "tags": "Cercato anche come", "products": "Prodotti in {name}", "related": "Categorie correlate",
            "faq": "Domande sulla pagina categoria {name} (prima dell'ordine)",
            "footer": "Generato da Contentful (entry {id}) per la knowledge base di Anna. Rimanda sempre il cliente alla pagina categoria qui sopra."},
+    "es": {"title": "categoría", "page": "Página de categoría en {shop}", "path": "Ruta de la categoría", "summary": "Resumen",
+           "tags": "También buscado como", "products": "Productos en {name}", "related": "Categorías relacionadas",
+           "faq": "Preguntas sobre la página de categoría {name} (antes de pedir)",
+           "footer": "Generado desde Contentful (entrada {id}) para la base de conocimiento de Anna. Remite siempre al cliente a la página de categoría indicada arriba."},
 }
 
 
