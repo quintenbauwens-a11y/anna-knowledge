@@ -1,5 +1,5 @@
 {
-  "_help": "One entry per shop. Set enabled=true to build it. 'domains' must match the shop names used in Contentful's 'per shop conditions' (case does not matter). 'live_sitemap' = the shop's category sitemap; only categories listed there are built. Connect shops have no category sitemap, so they use the matching end-label sitemap (live_sitemap_prefix = that shop's URL prefix). For a Connect shop, use the end-label domain in 'domains' so it gets exactly the same content as the end-label shop.",
+  "_help": "One entry per shop. Set enabled=true to build it. 'domains' must match the shop names used in Contentful's 'per shop conditions' (case does not matter). 'live_sitemap' = the shop's category sitemap; only categories listed there are built. Connect shops have no category sitemap, so they use the matching end-label sitemap (live_sitemap_prefix = that shop's URL prefix). For a Connect shop, use the end-label domain in 'domains' so it gets exactly the same content as the end-label shop. Products: 'products'=true builds products/<shop>/; 'products_include_noindex'=true keeps noindex products (hidden from Google but orderable via their link); 'products_respect_unavailable'=false because the live shops ignore Contentful's 'Unavailable' condition (checked IE, IT, UK).",
   "shops": [
     {
       "id": "en-ie",
@@ -22,7 +22,6 @@
       },
       "products": true,
       "products_respect_unavailable": false,
-      "_products_note": "Products: Contentful pcmProduct + product with a URL for en-IE. noindex products are included (hidden from Google but orderable via their link). The Irish V4 shop ignores the 'Unavailable' per-shop condition, so we do too.",
       "products_include_noindex": true
     },
     {
@@ -43,7 +42,10 @@
         "country_name": "Italia",
         "shop_country": "Italia",
         "shop_phone": "+39 06 9480 9947"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "it-connect",
@@ -65,7 +67,10 @@
         "shop_country": "Italia",
         "shop_phone": "+39 06 9480 9947"
       },
-      "_note": "Connect = straight copy of the IT end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the IT end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "es-es",
@@ -85,7 +90,10 @@
         "country_name": "España",
         "shop_country": "España",
         "shop_phone": "+34 960 13 67 57"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "es-connect",
@@ -107,7 +115,10 @@
         "shop_country": "España",
         "shop_phone": "+34 960 13 67 57"
       },
-      "_note": "Connect = straight copy of the ES end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the ES end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "nl-nl",
@@ -127,7 +138,10 @@
         "country_name": "Nederland",
         "shop_country": "Nederland",
         "shop_phone": "+31 88 088 8688"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "nl-connect",
@@ -149,7 +163,10 @@
         "shop_country": "Nederland",
         "shop_phone": "+31 88 088 8688"
       },
-      "_note": "Connect = straight copy of the nl-nl end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the nl-nl end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "nl-be",
@@ -169,7 +186,10 @@
         "country_name": "België",
         "shop_country": "België",
         "shop_phone": "03 808 15 06"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "nlbe-connect",
@@ -191,7 +211,10 @@
         "shop_country": "België",
         "shop_phone": "03 808 15 06"
       },
-      "_note": "Connect = straight copy of the nl-be end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the nl-be end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "fr-be",
@@ -211,7 +234,10 @@
         "country_name": "Belgique",
         "shop_country": "Belgique",
         "shop_phone": "02 808 35 80"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "frbe-connect",
@@ -233,7 +259,10 @@
         "shop_country": "Belgique",
         "shop_phone": "02 808 35 80"
       },
-      "_note": "Connect = straight copy of the fr-be end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the fr-be end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "fr-fr",
@@ -253,7 +282,10 @@
         "country_name": "France",
         "shop_country": "France",
         "shop_phone": "01 84 88 50 55"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "fr-connect",
@@ -275,7 +307,10 @@
         "shop_country": "France",
         "shop_phone": "01 84 88 50 55"
       },
-      "_note": "Connect = straight copy of the fr-fr end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the fr-fr end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "de-de",
@@ -295,7 +330,10 @@
         "country_name": "Deutschland",
         "shop_country": "Deutschland",
         "shop_phone": "+49 800 0010779"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "de-connect",
@@ -317,7 +355,10 @@
         "shop_country": "Deutschland",
         "shop_phone": "+49 800 0010779"
       },
-      "_note": "Connect = straight copy of the de-de end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the de-de end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "sv-se",
@@ -337,7 +378,10 @@
         "country_name": "Sverige",
         "shop_country": "Sverige",
         "shop_phone": ""
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "se-connect",
@@ -359,7 +403,10 @@
         "shop_country": "Sverige",
         "shop_phone": ""
       },
-      "_note": "Connect = straight copy of the sv-se end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the sv-se end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "en-gb",
@@ -379,7 +426,10 @@
         "country_name": "United Kingdom",
         "shop_country": "United Kingdom",
         "shop_phone": "+44 121 285 7464"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "uk-connect",
@@ -401,7 +451,10 @@
         "shop_country": "United Kingdom",
         "shop_phone": "+44 121 285 7464"
       },
-      "_note": "Connect = straight copy of the en-gb end-label content: visibility rules use the end-label domain, only the URLs differ."
+      "_note": "Connect = straight copy of the en-gb end-label content: visibility rules use the end-label domain, only the URLs differ.",
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     },
     {
       "id": "en-us",
@@ -422,7 +475,10 @@
         "country_name": "United States",
         "shop_country": "United States",
         "shop_phone": "+1 646 582 8295"
-      }
+      },
+      "products": true,
+      "products_include_noindex": true,
+      "products_respect_unavailable": false
     }
   ]
 }
