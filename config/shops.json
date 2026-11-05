@@ -22,7 +22,8 @@
       },
       "products": true,
       "products_respect_unavailable": false,
-      "_products_note": "Products: built from Contentful (URL for en-IE + not noindex). The Irish V4 shop ignores the 'Unavailable' per-shop condition, so we do too (respect_unavailable=false)."
+      "_products_note": "Products: Contentful pcmProduct + product with a URL for en-IE. noindex products are included (hidden from Google but orderable via their link). The Irish V4 shop ignores the 'Unavailable' per-shop condition, so we do too.",
+      "products_include_noindex": true
     },
     {
       "id": "it-it",
