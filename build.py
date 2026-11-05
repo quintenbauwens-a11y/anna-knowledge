@@ -186,6 +186,7 @@ class Report:
         self.written = []
         self.errors = []
         self.product_stats = {}  # shop id -> {reason: count}
+        self.product_errors = []  # (shop, entry id, url, error) – products skipped because of an error
 
 
 def fill_template(text, shop, report, where):
@@ -503,7 +504,11 @@ def build_products(src, shop, b, report, out_dir, site_url, today):
     stats, built, seen = {}, [], set()
     for ctype in P.PRODUCT_TYPES:  # PCM products first; an old-style product with the same URL is skipped
         for e in sorted(src.entries(ctype, shop["locale"]), key=lambda x: x["id"]):
-            ok, why = pb.is_live(e, report)
+            try:
+                ok, why = pb.is_live(e, report)
+            except Exception as ex:
+                ok, why = False, f"error while checking availability (skipped): {type(ex).__name__}"
+                report.product_errors.append((shop["id"], e["id"], str(e["fields"].get("url")), f"{type(ex).__name__}: {ex}"))
             if why:
                 stats[why] = stats.get(why, 0) + 1
             if not ok:
@@ -513,8 +518,16 @@ def build_products(src, shop, b, report, out_dir, site_url, today):
                 stats["duplicate or unusable URL"] = stats.get("duplicate or unusable URL", 0) + 1
                 continue
             seen.add(slug)
-            c = pb.build(e)
-            if not c["name"] or not (c["desc"] or c["specs"] or c["options"] or c["sections"]):
+            try:
+                c = pb.build(e)
+            except Exception as ex:  # one odd product must never stop a whole shop: skip it, list it in the report
+                why = f"error on this product (skipped): {type(ex).__name__}: {str(ex)[:120]}"
+                stats[why] = stats.get(why, 0) + 1
+                report.product_errors.append((shop["id"], e["id"], slug, f"{type(ex).__name__}: {ex}"))
+                if len(report.product_errors) <= 5:
+                    import traceback; traceback.print_exc()
+                continue
+            if not c["name"] or not (plain(c["desc"]) or c["specs"] or any((c["options"] or {}).values()) or c["sections"]):
                 stats["no content"] = stats.get("no content", 0) + 1
                 continue
             d = os.path.join(out_dir, "products", shop["id"], slug)
@@ -688,6 +701,10 @@ def main():
         rep.append("<h2>Products</h2><ul>")
         for sid, st in report.product_stats.items():
             rep.append(f"<li><strong>{e(sid)}</strong>: " + ", ".join(f"{e(k)}: {v}" for k, v in st.items()) + "</li>")
+        rep.append("</ul>")
+    if report.product_errors:
+        rep.append(f"<h2>Products skipped because of an error ({len(report.product_errors)})</h2><ul>")
+        rep += [f"<li>[{e(s_)}] {e(sl)} (entry {e(i)}): {e(m[:300])}</li>" for s_, i, sl, m in report.product_errors[:300]]
         rep.append("</ul>")
     rep.append(f"<h2>FAQs left out by the filter ({len(report.filtered)})</h2><p>Edit <code>config/faq_filters.json</code> to change this.</p><ul>")
     rep += [f"<li>[{e(s)}] <strong>{e(p)}</strong>: {e(q)} <small>(rule: <code>{e(r)}</code>)</small></li>" for s, p, q, r in report.filtered]

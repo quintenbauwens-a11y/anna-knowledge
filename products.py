@@ -156,8 +156,10 @@ def _dims(s):
 
 def print_options(product_data, lang):
     """Colours / print colours / print methods / print sizes from pcmProduct.productData (PCM attribute codes)."""
-    pa = ((product_data or {}).get("productAttributes") or {})
-    sel, pre = pa.get("selectedAttributes") or {}, pa.get("presetAttributes") or {}
+    def as_dict(x):  # productData comes from an older system: empty tables are sometimes stored as [] or ""
+        return x if isinstance(x, dict) else {}
+    pa = as_dict(as_dict(product_data).get("productAttributes"))
+    sel, pre = as_dict(pa.get("selectedAttributes")), as_dict(pa.get("presetAttributes"))
     cmap, tmap = COLOURS.get(lang, COLOURS["en"]), TECHNIQUES.get(lang, TECHNIQUES["en"])
     one, many = N_COLOURS.get(lang, N_COLOURS["en"])
 
@@ -196,7 +198,11 @@ class ProductBuilder:
         self.lang = self.shop.get("lang", "en")
 
     def tpl(self, text, name):
-        text = re.sub(r"\{\{\s*product_name\s*\}\}", name or "", text or "")
+        if isinstance(text, (list, tuple)):
+            text = " ".join(str(x) for x in text if isinstance(x, (str, int, float)))
+        elif not isinstance(text, str):
+            text = "" if text is None or isinstance(text, dict) else str(text)
+        text = re.sub(r"\{\{\s*product_name\s*\}\}", name or "", text)
         return self.b.t(text)
 
     def is_live(self, e, report):
@@ -230,7 +236,7 @@ class ProductBuilder:
     def build(self, e):
         b, f = self.b, e["fields"]
         b.touched = [e["updated"]] if e.get("updated") else []
-        name = b.t(f.get("title") or f.get("name") or f.get("searchName") or "").strip()
+        name = self.tpl(f.get("title") or f.get("name") or f.get("searchName") or "", "").strip()
         url = f"{self.shop['url_prefix']}/{f['url']}"
         # category
         cat = None
@@ -293,7 +299,7 @@ class ProductBuilder:
                 r = b.render_block(blk, name)
                 if r:
                     sections.append(r)
-        tags = [b.t(x) for x in (f.get("searchTags") or []) if x]
+        tags = [self.tpl(x, name) for x in (f.get("searchTags") or []) if isinstance(x, str) and x]
         return {"name": name, "slug": f["url"], "url": url, "category": cat, "desc": desc, "specs": specs,
                 "pros": pros, "cons": cons, "options": opts, "guides": guides, "faq": qa, "sections": sections,
                 "tags": tags, "id": e["id"], "updated": max(b.touched) if b.touched else None}
