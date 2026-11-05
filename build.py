@@ -60,14 +60,30 @@ class CDASource:
         self.lists = {k: v for k, v in self.lists.items() if k[1] == locale}
 
     def _get(self, params):
+        # Retries on rate limits (429), Contentful server hiccups (5xx) and network time-outs/drops,
+        # waiting a bit longer each time (2, 4, 8 ... max 60 s). Real errors (e.g. 400 "too big") are raised at once.
+        last = None
         for attempt in range(8):
-            r = self.s.get(self.base + "/entries", params=params, timeout=60)
+            wait = min(60, 2 ** (attempt + 1))
+            try:
+                r = self.s.get(self.base + "/entries", params=params, timeout=90)
+            except (requests.ConnectionError, requests.Timeout) as ex:
+                last = f"{type(ex).__name__}: {ex}"[:200]
+                print(f"   … network problem ({last}), retrying in {wait}s")
+                time.sleep(wait)
+                continue
             if r.status_code == 429:
-                time.sleep(float(r.headers.get("X-Contentful-RateLimit-Reset", 2 ** attempt)))
+                time.sleep(float(r.headers.get("X-Contentful-RateLimit-Reset", wait)))
+                last = "HTTP 429"
+                continue
+            if r.status_code >= 500:
+                last = f"HTTP {r.status_code}"
+                print(f"   … Contentful answered {r.status_code}, retrying in {wait}s")
+                time.sleep(wait)
                 continue
             r.raise_for_status()
             return r.json()
-        raise RuntimeError("Contentful rate limit: gave up after retries")
+        raise RuntimeError(f"Contentful still failing after 8 tries ({last})")
 
     @staticmethod
     def _norm(e):
