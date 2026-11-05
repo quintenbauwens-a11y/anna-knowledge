@@ -3,7 +3,7 @@ Anna knowledge site builder — products module (used by build.py).
 
 One page per live product per shop, built from Contentful only:
   - PCM products (content type pcmProduct) and older "product" entries (flyers, panels, buttons, ...)
-  - live = published + has a URL for the shop's locale + robots not "noindex"
+  - live = published + has a URL for the shop's locale (+ robots not "noindex", unless "products_include_noindex")
     (+ for shops with "products_respect_unavailable": the Contentful "Unavailable" per-shop condition,
      and for old-style products the "Available" switch)
 Per product: name, real URL, category, description, key specs, pros & cons, print options
@@ -206,8 +206,12 @@ class ProductBuilder:
             return False, None  # not sold in this shop (no URL for this locale) – not reported
         if TEST_SLUG.search(f.get("slug") or ""):
             return False, "test product"
+        info = None
         if (f.get("robots_content") or "").startswith("noindex"):
-            return False, "noindex in Contentful"
+            if not self.shop.get("products_include_noindex", False):
+                return False, "noindex in Contentful"
+            # hidden from Google/sitemap, but the product page still works and can be ordered
+            info = "(info) built although noindex (hidden from Google, but orderable via its link)"
         if e["type"] == "product" and f.get("available") is not None and not self.as_bool(f.get("available"), True):
             return False, "'Available' switched off"
         cond_ids = self.link_ids(f.get("unavailable"))
@@ -221,7 +225,7 @@ class ProductBuilder:
                     return False, "'Unavailable' condition for this shop"
                 # e.g. the V4 Irish shop shows these products anyway -> build them, but count them in the report
                 return True, "(info) built although an 'Unavailable' condition matches this shop (the live shop ignores it)"
-        return True, None
+        return True, info
 
     def build(self, e):
         b, f = self.b, e["fields"]

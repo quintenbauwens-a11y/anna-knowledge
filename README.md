@@ -19,7 +19,8 @@ through a **Sitemap knowledge folder** instead of CSV uploads.
 
 ## Products (`products.py`)
 - One page per live product: `products/<shop>/<product-url>/`, sitemap `products/<shop>/sitemap.xml`.
-- Live = published in Contentful + has a URL for the shop's language + not `noindex`.
+- Live = published in Contentful + has a URL for the shop's language. `noindex` products are skipped unless the shop has
+  `"products_include_noindex": true` (Ireland: yes – they are hidden from Google but can still be ordered via their link).
   Shops with `"products_respect_unavailable": true` also skip products whose *Unavailable* condition matches the
   shop (the Irish V4 shop ignores that condition, so Ireland has it set to `false`).
 - On the page: name, real product link, category, description, specifications, advantages, print options
