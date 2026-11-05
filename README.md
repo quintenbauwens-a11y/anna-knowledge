@@ -3,8 +3,8 @@
 Builds clean, text-only pages from Helloprint's Contentful content so Anna (Engaige) can sync them
 through a **Sitemap knowledge folder** instead of CSV uploads.
 
-**Now included:** category pages for all shops, and **product pages** for shops with `"products": true` in
-`config/shops.json` (Ireland first). Help-centre FAQs can be added later.
+**Now included:** category pages for all shops, and **product pages** for every shop (`"products": true` in
+`config/shops.json`). Help-centre FAQs can be added later.
 
 ## How it works
 1. Every night (and whenever `build.py` or `config/` changes) GitHub runs `build.py`.
@@ -15,7 +15,9 @@ through a **Sitemap knowledge folder** instead of CSV uploads.
    `categories/<shop>/<category-slug>/`.
 4. Each shop gets a sitemap: `categories/<shop>/sitemap.xml` → add that URL to an Engaige *Sitemap* folder.
 5. Every page links to the real helloprint.com category page; Anna should cite that link.
-6. `report.html` lists what was left out and why. A copy of every build is saved in `snapshot/`.
+6. `report.html` lists what was left out and why. A copy of every build (categories + report, not the ~100k
+   product pages) is saved in `snapshot/`.
+7. If products fail for a shop, the run stops before publishing: yesterday's site stays online and GitHub emails you.
 
 ## Products (`products.py`)
 - One page per live product: `products/<shop>/<product-url>/`, sitemap `products/<shop>/sitemap.xml`.

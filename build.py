@@ -52,6 +52,12 @@ class CDASource:
         self.s = requests.Session()
         self.s.headers["Authorization"] = f"Bearer {token}"
         self.cache = {}  # (locale, id) -> entry
+        self.lists = {}  # (content type, locale) -> entries (Connect shops reuse their end-label shop's download)
+
+    def clear_except(self, locale):
+        """Free memory: drop everything downloaded for other locales (products are big)."""
+        self.cache = {k: v for k, v in self.cache.items() if k[0] == locale}
+        self.lists = {k: v for k, v in self.lists.items() if k[1] == locale}
 
     def _get(self, params):
         for attempt in range(8):
@@ -87,14 +93,25 @@ class CDASource:
 
     def entries(self, content_type, locale, page_size=30):
         """All published entries of one content type for one locale (linked entries 2 levels deep are cached too)."""
+        key = (content_type, locale)
+        if key in self.lists:
+            return self.lists[key]
         out, skip = [], 0
         while True:
-            data = self._get({"content_type": content_type, "locale": locale, "include": 2, "limit": page_size,
-                              "skip": skip, "order": "sys.id"})
+            params = {"content_type": content_type, "locale": locale, "include": 2, "limit": page_size,
+                      "skip": skip, "order": "sys.id"}
+            try:
+                data = self._get(params)
+            except requests.HTTPError as ex:  # "response size too big" -> ask for fewer entries per request
+                if ex.response is not None and ex.response.status_code == 400 and page_size > 3:
+                    page_size = max(3, page_size // 2)
+                    continue
+                raise
             self._absorb(data, locale)
             out += [self._norm(e) for e in data["items"]]
             skip += len(data["items"])
             if skip >= data["total"] or not data["items"]:
+                self.lists[key] = out
                 return out
 
     def get(self, ids, locale):
@@ -506,6 +523,7 @@ def build_products(src, shop, b, report, out_dir, site_url, today):
                 fh.write(P.product_html(c, shop, lambda secs, name: blocks_html(secs, shop)))
             built.append(c)
     base = f"{site_url}/products/{shop['id']}"
+    os.makedirs(os.path.join(out_dir, "products", shop["id"]), exist_ok=True)
     with open(os.path.join(out_dir, "products", shop["id"], "sitemap.xml"), "w", encoding="utf-8") as fh:
         fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         for c in sorted(built, key=lambda x: x["slug"]):
@@ -591,9 +609,11 @@ def main():
     today = dt.date.today().isoformat()
     os.makedirs(a.out, exist_ok=True)
     open(os.path.join(a.out, ".nojekyll"), "w").close()
-    index_rows, product_rows = [], []
+    index_rows, product_rows, product_failed = [], [], []
 
     for shop in shops:
+        if hasattr(src, "clear_except"):
+            src.clear_except(shop["locale"])
         try:
             print(f"== {shop['name']} ({shop['locale']})")
             b = Builder(src, shop, filters, report)
@@ -644,8 +664,11 @@ def main():
                 n, url = build_products(src, shop, Builder(src, shop, filters, report), report, a.out, a.site_url, today)
                 print(f"   {n} product pages written")
                 product_rows.append((shop, n, url))
-            except Exception as ex:
-                keep_previous("products", shop["id"], a.out, report, ex)
+            except Exception as ex:  # products are not kept in snapshot/ (too big) -> fail the run instead,
+                import traceback      # so GitHub keeps yesterday's site online and emails the repo owner
+                traceback.print_exc()
+                report.errors.append((f"{shop['id']} (products)", f"{type(ex).__name__}: {ex}"))
+                product_failed.append(shop["id"])
 
     # index + report
     e = html.escape
@@ -681,6 +704,9 @@ def main():
                  + "".join(f"<li>{e(s['name'])} – categories: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in index_rows)
                  + "".join(f"<li>{e(s['name'])} – <strong>products</strong>: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in product_rows)
                  + "</ul></body></html>")
+    if product_failed:
+        print(f"Product build failed for {', '.join(product_failed)} – stopping so the previous site stays online.")
+        sys.exit(2)
     print(f"Filtered FAQs: {len(report.filtered)} | skipped pages: {len(report.skipped_pages)} | unknown blocks: {report.unknown_blocks} | unknown vars: {report.template_vars}")
 
 
