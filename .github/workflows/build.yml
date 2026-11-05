@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}      # "Run workflow" button in the Actions tab
   push:
     branches: [main]
-    paths: ["build.py", "config/**", ".github/workflows/build.yml"]
+    paths: ["build.py", "products.py", "config/**", ".github/workflows/build.yml"]
 
 permissions:
   contents: write   # to save a snapshot of the generated pages (history of what Anna knew)
@@ -20,6 +20,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 300
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
@@ -45,6 +46,7 @@ jobs:
       - name: Save snapshot in the repository
         run: |
           rm -rf snapshot && cp -r _site snapshot
+          rm -rf snapshot/products   # ~100k product pages: too big to keep in the repo
           git config user.name "anna-knowledge-bot"
           git config user.email "actions@users.noreply.github.com"
           git add snapshot
