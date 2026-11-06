@@ -130,6 +130,18 @@ class CDASource:
                 self.lists[key] = out
                 return out
 
+    def entries_all_locales(self, content_type, page_size=100):
+        """All published entries of one content type with every locale (fields: {field: {locale: value}}),
+        without Contentful's locale fallback. Used for the help centre (each shop picks its own languages)."""
+        out, skip = [], 0
+        while True:
+            data = self._get({"content_type": content_type, "locale": "*", "include": 0, "limit": page_size,
+                              "skip": skip, "order": "sys.id"})
+            out += [self._norm(e) for e in data["items"]]
+            skip += len(data["items"])
+            if skip >= data["total"] or not data["items"]:
+                return out
+
     def get(self, ids, locale):
         missing = [i for i in dict.fromkeys(ids) if (locale, i) not in self.cache]
         for k in range(0, len(missing), 100):
@@ -176,6 +188,10 @@ class FixtureSource:
     def get(self, ids, locale):
         return {i: self._resolve(self.store.get(i), locale) for i in ids}
 
+    def entries_all_locales(self, content_type, page_size=100):
+        return [{"id": e["sys"]["id"], "type": e["sys"]["contentType"], "updated": None, "fields": e["fields"]}
+                for e in self.store.values() if e["sys"]["contentType"] == content_type and e["sys"].get("published", True)]
+
 
 # --------------------------------------------------------------------------------------------
 # Helpers
@@ -203,6 +219,7 @@ class Report:
         self.errors = []
         self.product_stats = {}  # shop id -> {reason: count}
         self.product_errors = []  # (shop, entry id, url, error) – products skipped because of an error
+        self.help = {}  # shop id -> help centre details (see helpcentre.py)
 
 
 def fill_template(text, shop, report, where):
@@ -638,7 +655,9 @@ def main():
     today = dt.date.today().isoformat()
     os.makedirs(a.out, exist_ok=True)
     open(os.path.join(a.out, ".nojekyll"), "w").close()
-    index_rows, product_rows, product_failed = [], [], []
+    index_rows, product_rows, product_failed, help_rows = [], [], [], []
+    import helpcentre as HC
+    hc_cfg = HC.load_config(ROOT)
 
     for shop in shops:
         if hasattr(src, "clear_except"):
@@ -698,6 +717,13 @@ def main():
                 traceback.print_exc()
                 report.errors.append((f"{shop['id']} (products)", f"{type(ex).__name__}: {ex}"))
                 product_failed.append(shop["id"])
+        if (shop.get("helpcentre") or {}).get("enabled") and not a.only:
+            try:
+                n, url = HC.build_help(src, shop, hc_cfg, report, a.out, a.site_url, today)
+                print(f"   {n} help centre pages written")
+                help_rows.append((shop, n, url))
+            except Exception as ex:  # small enough to keep in snapshot/: fall back to the previous version
+                keep_previous("help", shop["id"], a.out, report, ex)
 
     # index + report
     e = html.escape
@@ -718,6 +744,8 @@ def main():
         for sid, st in report.product_stats.items():
             rep.append(f"<li><strong>{e(sid)}</strong>: " + ", ".join(f"{e(k)}: {v}" for k, v in st.items()) + "</li>")
         rep.append("</ul>")
+    if report.help:
+        rep.append("<h2>Help centre</h2><p>Edit <code>config/helpcentre.json</code> to change what is left out.</p>" + HC.report_html(report))
     if report.product_errors:
         rep.append(f"<h2>Products skipped because of an error ({len(report.product_errors)})</h2><ul>")
         rep += [f"<li>[{e(s_)}] {e(sl)} (entry {e(i)}): {e(m[:300])}</li>" for s_, i, sl, m in report.product_errors[:300]]
@@ -736,6 +764,7 @@ def main():
                  f"<h1>Anna knowledge site</h1><p>Last build: {today}. <a href='report.html'>Build report</a></p><ul>"
                  + "".join(f"<li>{e(s['name'])} – categories: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in index_rows)
                  + "".join(f"<li>{e(s['name'])} – <strong>products</strong>: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in product_rows)
+                 + "".join(f"<li>{e(s['name'])} – <strong>help centre</strong>: {n} pages – sitemap: <a href='{e(u)}'>{e(u)}</a></li>" for s, n, u in help_rows)
                  + "</ul></body></html>")
     if product_failed:
         print(f"Product build failed for {', '.join(product_failed)} – stopping so the previous site stays online.")
