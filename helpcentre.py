@@ -23,6 +23,16 @@ TOKEN = re.compile(r"\{\{\s*([a-zA-Z_]+)(?:\|[a-z]+)?\s*\}\}")
 LABELS = {
     "en": {"title": "help centre", "page": "Help centre article on {shop}", "cat": "Category",
            "footer": "Generated from Contentful (help centre entry {id}) for Anna's knowledge base."},
+    "nl": {"title": "klantenservice", "page": "Klantenservice-artikel op {shop}", "cat": "Categorie",
+           "footer": "Gegenereerd uit Contentful (klantenservice-item {id}) voor Anna's kennisbank."},
+    "fr": {"title": "centre d'aide", "page": "Article du centre d'aide sur {shop}", "cat": "Catégorie",
+           "footer": "Généré depuis Contentful (article d'aide {id}) pour la base de connaissances d'Anna."},
+    "de": {"title": "Hilfecenter", "page": "Hilfecenter-Artikel auf {shop}", "cat": "Kategorie",
+           "footer": "Aus Contentful erzeugt (Hilfecenter-Eintrag {id}) für Annas Wissensdatenbank."},
+    "es": {"title": "centro de ayuda", "page": "Artículo del centro de ayuda en {shop}", "cat": "Categoría",
+           "footer": "Generado desde Contentful (artículo de ayuda {id}) para la base de conocimiento de Anna."},
+    "sv": {"title": "hjälpcenter", "page": "Hjälpcenterartikel på {shop}", "cat": "Kategori",
+           "footer": "Genererad från Contentful (hjälpcenterpost {id}) för Annas kunskapsbas."},
     "it": {"title": "centro assistenza", "page": "Articolo del centro assistenza su {shop}", "cat": "Categoria",
            "footer": "Generato da Contentful (voce del centro assistenza {id}) per la knowledge base di Anna."},
 }
@@ -115,7 +125,10 @@ class Renderer:
         keep = []
         for s in SENT_SPLIT.split(inner):
             txt = html.unescape(re.sub(r"<[^>]+>", "", s)).strip()
-            if txt and any(p.search(txt) for p in self.ref):
+            if txt and any(p.search(txt) for p in self.ref) and not (self.cfg.get("referral_keep_if_digits") and re.search(r"\d", txt)):
+                # a lead-in question right before it ("Refund not arrived after 8 days?") goes too
+                if keep and html.unescape(re.sub(r"<[^>]+>", "", keep[-1])).strip().endswith("?"):
+                    txt = html.unescape(re.sub(r"<[^>]+>", "", keep.pop())).strip() + " " + txt
                 self.removed.append(txt)
                 continue
             keep.append(s)
@@ -215,6 +228,9 @@ def build_help(src, shop, cfg, report, out_dir, site_url, today):
         title = pick(f.get("title"), chain)
         slug = pick(f.get("url"), chain)
         body = pick(f.get("body"), chain)
+        if hc.get("url") == "cs" and not e["id"].startswith("hcArt-"):  # new-website-only article
+            stats["only on the new help centre"] = stats.get("only on the new help centre", 0) + 1
+            continue
         if not (title and slug and body):
             stats["not on this shop (no text in its language)"] = stats.get("not on this shop (no text in its language)", 0) + 1
             continue
@@ -225,7 +241,8 @@ def build_help(src, shop, cfg, report, out_dir, site_url, today):
         if robots.startswith("noindex"):
             stats["noindex"] = stats.get("noindex", 0) + 1
             continue
-        if e["id"] in cfg.get("exclude_articles", {}):
+        exa = cfg.get("exclude_articles", {}).get(e["id"])
+        if exa and ("shops" not in exa or shop["id"] in exa["shops"]):
             stats["covered by a policy"] = stats.get("covered by a policy", 0) + 1
             info["excluded"].append((title, cfg["exclude_articles"][e["id"]].get("covered_by", "")))
             continue
@@ -252,7 +269,10 @@ def build_help(src, shop, cfg, report, out_dir, site_url, today):
         cat_name = None
         if cat_id in cats:
             cat_name = pick(cats[cat_id]["fields"].get("title") or cats[cat_id]["fields"].get("name"), chain)
-        url = f"{shop['url_prefix']}/{hc.get('path', 'help-centre')}/{slug}"
+        if hc.get("url") == "cs":  # old help centre: /cs/articles/<number of hcArt-<number>>
+            url = f"{shop['url_prefix']}/cs/articles/{e['id'].split('-', 1)[1]}"
+        else:
+            url = f"{shop['url_prefix']}/{hc.get('path', 'help-centre')}/{slug}"
         d = os.path.join(out_dir, "help", shop["id"], slug)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8") as fh:
