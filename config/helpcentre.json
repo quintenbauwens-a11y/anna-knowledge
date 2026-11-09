@@ -473,9 +473,17 @@
   },
   "hcArt-318": {
    "title": "How can I change the design I made in Canva once I accept it?",
-   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "covered_by": "Legacy shops: the website says 'editable until paid', which is the new-stack (IE/IT) rule. On legacy shops a Canva-plugin design can be edited until production starts (Tribal folder). US: no Canva.",
    "shops": [
-    "en-us"
+    "en-us",
+    "en-gb",
+    "nl-nl",
+    "nl-be",
+    "fr-fr",
+    "fr-be",
+    "de-de",
+    "es-es",
+    "sv-se"
    ]
   },
   "hcArt-319": {
@@ -526,6 +534,14 @@
    "shops": [
     "en-us"
    ]
+  },
+  "hcArt-260": {
+   "title": "Can we create a design for you?",
+   "covered_by": "Decided: no design help at all. The website says small changes are possible (wrong). Kept out until the text is fixed; the Tribal folders keep the correct answer."
+  },
+  "hcArt-402": {
+   "title": "Invoicing via Peppol (e-invoicing)",
+   "covered_by": "Decided: invoices do go via Peppol. The website says the obligation doesn't apply to Helloprint (wrong). Kept out until the text is fixed; BE-NL Tribal keeps the correct answer."
   }
  },
  "hold": [
