@@ -57,7 +57,18 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "it"
+    ],
+    "path": "centro-assistenza",
+    "link_vars": {
+     "my_account_url": "https://www.helloprint.com/it-it/mio-account",
+     "order_page": "https://www.helloprint.com/it-it/mio-account"
+    }
+   }
   },
   {
    "id": "it-connect",
@@ -105,7 +116,15 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "es-ES"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "es-connect",
@@ -153,7 +172,15 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "nl"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "nl-connect",
@@ -201,7 +228,16 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "nl-BE",
+     "nl"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "nlbe-connect",
@@ -249,7 +285,16 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "fr-BE",
+     "fr-FR"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "frbe-connect",
@@ -297,7 +342,15 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "fr-FR"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "fr-connect",
@@ -345,7 +398,15 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "de-DE"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "de-connect",
@@ -393,7 +454,15 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "sv-SE"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "se-connect",
@@ -441,7 +510,16 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "en-GB",
+     "en"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   },
   {
    "id": "uk-connect",
@@ -490,7 +568,16 @@
    },
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "en-US",
+     "en"
+    ],
+    "url": "cs",
+    "link_vars": {}
+   }
   }
  ]
 }

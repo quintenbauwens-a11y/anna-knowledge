@@ -14,11 +14,35 @@
  "exclude_articles": {
   "19Np3z04oNcqvycyu3Vb5M": {
    "title": "Managing your addresses",
-   "covered_by": "My Addresses 26"
+   "covered_by": "My Addresses 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "22qxbLdmeLtnQfMQtsWkm": {
    "title": "How do I approve my proof?",
-   "covered_by": "Approve Digital Proof 26"
+   "covered_by": "Approve Digital Proof 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "34kDPEJ9zLDPgSN9h6ECqO": {
    "title": "What happens after I send a message?",
@@ -27,10 +51,6 @@
   "55rafkv8YFZGvJTJq45kg": {
    "title": "How do I attach files to my message?",
    "covered_by": "support messages (Anna is support)"
-  },
-  "6VGO8HxqIiSIekxQ3tSBy2": {
-   "title": "How do I change my delivery address after ordering?",
-   "covered_by": "Change Delivery Address 26"
   },
   "7bu55hAZpKzd7bR1MKbaS6": {
    "title": "How long does a reply usually take?",
@@ -42,115 +62,162 @@
   },
   "hcArt-159": {
    "title": "Can I cancel my order?",
-   "covered_by": "Cancel Order 27"
-  },
-  "hcArt-165": {
-   "title": "How do I file a complaint?",
-   "covered_by": "Complaint Handling 26"
-  },
-  "hcArt-166": {
-   "title": "What is the status of my complaint?",
-   "covered_by": "Complaint Handling 26"
+   "covered_by": "Cancel Order 27",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-167": {
    "title": "Can I request a sample?",
-   "covered_by": "Sample Request 26"
-  },
-  "hcArt-168": {
-   "title": "How can I track my order?",
-   "covered_by": "Track & Trace 26 / Order Status"
-  },
-  "hcArt-175": {
-   "title": "What should I do if my package hasn't been delivered?",
-   "covered_by": "Order Not Received / Delayed Delivery"
+   "covered_by": "Sample Request 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-177": {
    "title": "My order arrived incomplete. What should I do?",
-   "covered_by": "Complaint - Missing Items 26"
-  },
-  "hcArt-178": {
-   "title": "My order has been delivered damaged. What should I do?",
-   "covered_by": "Complaint - Carrier Damaged Delivery"
+   "covered_by": "Complaint - Missing Items 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-183": {
    "title": "How can I change my invoice address?",
-   "covered_by": "Change Invoice Address 26"
-  },
-  "hcArt-184": {
-   "title": "My payment has failed, what should I do?",
-   "covered_by": "Payment Method 26 / Payment Link Expired 26"
-  },
-  "hcArt-187": {
-   "title": "Where can I find my credit invoice?",
-   "covered_by": "Get Invoice — New Stack"
+   "covered_by": "Change Invoice Address 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-188": {
    "title": "Why did I receive a payment reminder?",
-   "covered_by": "Finance; Payment Reminder - 26"
+   "covered_by": "Finance; Payment Reminder - 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-203": {
    "title": "How can I join the non-profit program?",
-   "covered_by": "Non Profit Program Request 26"
+   "covered_by": "Non Profit Program Request 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-204": {
    "title": "Can I return my order?",
-   "covered_by": "Return Process 26"
+   "covered_by": "Return Process 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-205": {
    "title": "Can I change my order?",
-   "covered_by": "Artwork Adjustments 26 / Upgrade Downgrade 26"
-  },
-  "hcArt-211": {
-   "title": "Can I change my delivery date?",
-   "covered_by": "Later Delivery Date 26"
-  },
-  "hcArt-214": {
-   "title": "My track and trace code is not working, what can I do?",
-   "covered_by": "Track & Trace 26"
-  },
-  "hcArt-215": {
-   "title": "Can I change my delivery address?",
-   "covered_by": "Change Delivery Address 26"
+   "covered_by": "Artwork Adjustments 26 / Upgrade Downgrade 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-218": {
    "title": "I have cancelled my order, why have I not received my refund?",
-   "covered_by": "Refund Status 26"
-  },
-  "hcArt-219": {
-   "title": "When will I receive my invoice?",
-   "covered_by": "Get Invoice — New Stack / Invoice Request 26"
+   "covered_by": "Refund Status 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-220": {
    "title": "I have not received my invoice, now what?",
-   "covered_by": "Invoice Request 26 + ONE"
-  },
-  "hcArt-260": {
-   "title": "Can we create a design for you?",
-   "covered_by": "Create Design - US 26 / Where To Design 26"
-  },
-  "hcArt-262": {
-   "title": "Can I repeat a previous order?",
-   "covered_by": "Repeat Order 2026"
-  },
-  "hcArt-263": {
-   "title": "How can I change my password?",
-   "covered_by": "Password Reset 26"
-  },
-  "hcArt-265": {
-   "title": "Reset your password or get back into your account",
-   "covered_by": "Password Reset 26"
-  },
-  "hcArt-267": {
-   "title": "Where can I find my order status?",
-   "covered_by": "Order Status — New Stack"
-  },
-  "hcArt-272": {
-   "title": "Is my order guaranteed to be delivered on the chosen date?",
-   "covered_by": "Guaranteed Delivery 2026"
+   "covered_by": "Invoice Request 26 + ONE",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-280": {
    "title": "What happens when the delivery attempts were unsuccessful?",
-   "covered_by": "Not Home 26 / Refused Delivery (help article shows £15 on IE)"
+   "covered_by": "Not Home 26 / Refused Delivery (help article shows £15 on IE)",
+   "shops": [
+    "en-ie"
+   ]
   },
   "hcArt-287": {
    "title": "How to get in touch",
@@ -158,75 +225,132 @@
   },
   "hcArt-326": {
    "title": "How do I change my artwork file after uploading?",
-   "covered_by": "Upload Corrected Files 2026 / Artwork Adjustments 26"
-  },
-  "hcArt-334": {
-   "title": "How do I add a discount voucher to my order?",
-   "covered_by": "Where to add voucher 2026"
-  },
-  "hcArt-337": {
-   "title": "Why is my discount voucher not working?",
-   "covered_by": "Voucher Error 26"
+   "covered_by": "Upload Corrected Files 2026 / Artwork Adjustments 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-340": {
    "title": "Can I change the quantity of my order after I placed it?",
-   "covered_by": "Different Quantity / Upgrade Downgrade 26"
+   "covered_by": "Different Quantity / Upgrade Downgrade 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-345": {
    "title": "How do I increase my credit limit?",
-   "covered_by": "Credit Allowance 26"
-  },
-  "hcArt-347": {
-   "title": "Can I change my delivery address when I have already placed my order?",
-   "covered_by": "Change Delivery Address 26"
+   "covered_by": "Credit Allowance 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-349": {
    "title": "General information about our VIP program",
-   "covered_by": "VIP Status 26 (help article shows £ amounts)"
+   "covered_by": "VIP Status 26 (help article shows £ amounts)",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se"
+   ]
   },
   "hcArt-354": {
    "title": "Ik was een Pro-klant en nu ben ik geen VIP-klant meer. Waarom?",
-   "covered_by": "VIP Status 26"
-  },
-  "hcArt-360": {
-   "title": "Can I delete my account?",
-   "covered_by": "Delete Account 26"
-  },
-  "hcArt-361": {
-   "title": "How do I unsubscribe from the newsletter?",
-   "covered_by": "Unsubscribe 26"
+   "covered_by": "VIP Status 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se"
+   ]
   },
   "hcArt-362": {
    "title": "How does the lowest price guarantee work?",
-   "covered_by": "Lowest Price Guarantee 26"
+   "covered_by": "Lowest Price Guarantee 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-365": {
    "title": "How do I cancel a specific product instead of my entire order?",
-   "covered_by": "Cancel Order 27"
-  },
-  "hcArt-373": {
-   "title": "Can I speed up my order that is already in production?",
-   "covered_by": "Speed Up Production 26"
+   "covered_by": "Cancel Order 27",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-378": {
    "title": "Can I change my default delivery address that is used for all orders?",
-   "covered_by": "My Addresses 26"
-  },
-  "hcArt-385": {
-   "title": "I have overpaid my order, how can this be resolved?",
-   "covered_by": "Overpayment - Chat 26"
-  },
-  "hcArt-386": {
-   "title": "What does the status assigned to my order mean?",
-   "covered_by": "Order Status — New Stack"
+   "covered_by": "My Addresses 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-389": {
    "title": "I can not log in, what should I do?",
-   "covered_by": "Can't Log In 26"
-  },
-  "hcArt-394": {
-   "title": "Why did the delivery date change since I placed the order?",
-   "covered_by": "Later Delivery Date 26 / Delayed Delivery"
+   "covered_by": "Can't Log In 26",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be",
+    "nl-be"
+   ]
   },
   "hcArt-400": {
    "title": "Give us a call",
@@ -238,7 +362,170 @@
   },
   "M0YxWoGPOQ5A0RVD124gH": {
    "title": "How do I request a quote?",
-   "covered_by": "Light Quote Request 26 (no quotes on IE/IT end label)"
+   "covered_by": "Light Quote Request 26 (no quotes on IE/IT end label)",
+   "shops": [
+    "en-ie",
+    "it-it",
+    "de-de"
+   ]
+  },
+  "6VGO8HxqIiSIekxQ3tSBy2": {
+   "title": "How do I change my delivery address after ordering?",
+   "covered_by": "Change Delivery Address 26",
+   "shops": [
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be"
+   ]
+  },
+  "hcArt-215": {
+   "title": "Can I change my delivery address?",
+   "covered_by": "Change Delivery Address 26",
+   "shops": [
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be"
+   ]
+  },
+  "hcArt-347": {
+   "title": "Can I change my delivery address when I have already placed my order?",
+   "covered_by": "Change Delivery Address 26",
+   "shops": [
+    "it-it",
+    "en-gb",
+    "nl-nl",
+    "en-us",
+    "de-de",
+    "sv-se",
+    "es-es",
+    "fr-fr",
+    "fr-be"
+   ]
+  },
+  "hcArt-385": {
+   "title": "I have overpaid my order, how can this be resolved?",
+   "covered_by": "policy",
+   "shops": [
+    "en-us",
+    "de-de"
+   ]
+  },
+  "hcArt-21": {
+   "title": "Adding elements and images",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-311": {
+   "title": "",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-312": {
+   "title": "How do I add an extra page to my design when using Canva? (i.e. for double-sided products)",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-313": {
+   "title": "",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-314": {
+   "title": "How can I find the right size in Canva?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-315": {
+   "title": "Can I change the size of my file in Canva?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-317": {
+   "title": "How can I find my previous Canva designs?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-318": {
+   "title": "How can I change the design I made in Canva once I accept it?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-319": {
+   "title": "Why does my Canva design look so blurry?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-320": {
+   "title": "How come elements in my design have moved after downloading it from Canva?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-321": {
+   "title": "How do I add elements, borders, etc when using Canva?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-322": {
+   "title": "",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-323": {
+   "title": "How do I upload my own images in Canva?",
+   "covered_by": "US only: the US FAQ says Helloprint has no Canva integration in the US; the US website shows the UK Canva text. Kept out of the US sitemap until confirmed.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-217": {
+   "title": "Do I need to pay VAT?",
+   "covered_by": "US only: the US website shows the UK text (HMRC). The US FAQ says no VAT on US orders.",
+   "shops": [
+    "en-us"
+   ]
+  },
+  "hcArt-379": {
+   "title": "Why do I need to pay an extra charge if I choose pay on invoice?",
+   "covered_by": "US only: the US website shows the fee in euros (1.99€).",
+   "shops": [
+    "en-us"
+   ]
   }
  },
  "hold": [
@@ -248,7 +535,8 @@
    "reason": "Says Secured Delivery does not cover loss. Correct: lost -> reprint/refund, late -> 20% refund (Anna-only folder). Released automatically once the text is corrected.",
    "while_contains": [
     "guarantee against loss",
-    "garanzia contro perdita"
+    "garanzia contro perdita",
+    "ingen garanti mot förlust"
    ]
   },
   {
@@ -257,24 +545,85 @@
    "reason": "Times differ from operations (about 70% autocheck in ~5 min, manual 30-60 min; Anna-only folder). Released automatically once the text is corrected.",
    "while_contains": [
     "within 24h",
-    "entro 1-2 minuti",
-    "1-2 minuti"
+    "1-2 minut",
+    "1 à 2 minutes",
+    "en 24h",
+    "binnen 24u",
+    "1-2 minuter"
+   ]
+  },
+  {
+   "id": "hcArt-165",
+   "title": "How do I file a complaint?",
+   "reason": "Says complaints must be reported within 10 days. The complaint policy (Complaint Term 26) uses 14 days from delivery; the policy decides. Released automatically once the text no longer says 10 days.",
+   "while_contains": [
+    "within 10 days",
+    "10 tagen",
+    "10 días",
+    "10 jours",
+    "10 dagen",
+    "10 dagar",
+    "10 giorni",
+    "mitt konto → support"
+   ]
+  },
+  {
+   "id": "hcArt-166",
+   "title": "What is the status of my complaint?",
+   "reason": "Swedish text is written for the new help centre (Mitt konto → ...), which the Swedish site does not have yet. Released automatically once the text no longer uses that path.",
+   "while_contains": [
+    "mitt konto → support"
+   ]
+  },
+  {
+   "id": "hcArt-265",
+   "title": "I forgot my password, what now?",
+   "reason": "Swedish text is written for the new help centre (Mitt konto → ...), which the Swedish site does not have yet. Released automatically once the text no longer uses that path.",
+   "while_contains": [
+    "mitt konto → detaljer"
    ]
   }
  ],
  "referral_patterns": {
   "en": [
-   "\\bcontact (us|our|the)\\b",
+   "\\bcontact (us|our)\\b",
    "\\bget in touch\\b",
-   "\\breach out to us\\b",
-   "\\b(customer (service|experience)|support|printexperts?) team\\b",
-   "\\bcustomer service\\b"
+   "\\breach out\\b",
+   "\\b(talk|speak) to (us|our)\\b",
+   "\\bto our customer (service|experience) team\\b"
+  ],
+  "nl": [
+   "\\bneem\\b.*\\bcontact\\b.*\\bop\\b",
+   "\\bcontact met ons\\b",
+   "\\bcontacteer (ons|onze)\\b",
+   "\\bstuur ons een bericht\\b"
+  ],
+  "de": [
+   "\\bkontaktieren sie uns\\b",
+   "\\bnehmen sie\\b.*\\bkontakt\\b",
+   "\\bwenden sie sich\\b.*\\ban unser",
+   "\\bmit unserem\\b.*\\bin verbindung\\b",
+   "\\bmelden sie sich bei uns\\b"
+  ],
+  "fr": [
+   "\\bcontactez[- ]nous\\b",
+   "\\bnous contacter\\b",
+   "\\bcontacter (notre|nos)\\b",
+   "\\bprenez contact avec nous\\b"
+  ],
+  "es": [
+   "\\bcont[aá]ctanos\\b",
+   "\\bcontacta con (nosotros|nuestro)\\b",
+   "\\bp[oó]n(te|gase) en contacto con (nosotros|nuestro)\\b"
+  ],
+  "sv": [
+   "\\bkontakta (oss|vår|vårt)\\b",
+   "\\bhör av dig\\b"
   ],
   "it": [
-   "\\bcontatta(teci|ci|re)?\\b",
-   "\\bmettiti in contatto\\b",
-   "\\bservizio clienti\\b",
-   "\\bassistenza clienti\\b"
+   "\\bcontatta(teci|ci)\\b",
+   "\\bcontatta(re)? (il nostro|i nostri|il servizio)\\b",
+   "\\bmettiti in contatto\\b"
   ]
  },
  "referral_clauses": {
@@ -283,11 +632,29 @@
   ],
   "it": [
    ",?\\s+oppure contatta(ci)?[^.!?]*"
+  ],
+  "nl": [
+   ",?\\s+of neem contact (met ons )?op[^.!?]*"
+  ],
+  "fr": [
+   ",?\\s+ou contactez[- ]nous[^.!?]*"
+  ],
+  "de": [
+   ",?\\s+oder kontaktieren sie uns[^.!?]*"
+  ],
+  "es": [
+   ",?\\s+o cont[aá]ctanos[^.!?]*"
+  ],
+  "sv": [
+   ",?\\s+eller kontakta oss[^.!?]*"
   ]
  },
  "contact_tokens": [
   "contact_url",
   "contact_form",
   "complaint_form"
- ]
+ ],
+ "_note_exclude_articles": "Per shop ('shops'): left out only where the covering policy is published AND attached to all of that shop's agents (checked 2026-11-06: IE = IE Endlabel + IE HubSpot email + IE New Stack; IT = IT Endlabel + IT HubSpot email). No 'shops' = all shops ('Anna is support' articles). Re-check when policies change.",
+ "referral_keep_if_digits": true,
+ "_note_referrals": "A sentence is only removed when it tells the customer to contact Helloprint (verb + us/our team). Sentences with a number (e.g. 'within 14 days') are kept. Every removed sentence is listed in the report."
 }
