@@ -548,11 +548,13 @@
   {
    "id": "hcArt-174",
    "title": "What is Secured Delivery?",
-   "reason": "Says Secured Delivery does not cover loss. Correct: lost -> reprint/refund, late -> 20% refund (Anna-only folder). Released automatically once the text is corrected.",
+   "reason": "Says Secured Delivery does not cover lost parcels. Decided: lost -> reprint/refund, late -> 20% refund (Tribal folder). Released automatically once the text is corrected.",
    "while_contains": [
     "guarantee against loss",
     "garanzia contro perdita",
-    "ingen garanti mot förlust"
+    "ingen garanti mot förlust",
+    "doesn't cover a damaged or lost",
+    "non copre un pacco danneggiato o smarrito"
    ]
   },
   {
@@ -597,6 +599,15 @@
    "reason": "Swedish text is written for the new help centre (Mitt konto → ...), which the Swedish site does not have yet. Released automatically once the text no longer uses that path.",
    "while_contains": [
     "mitt konto → detaljer"
+   ]
+  },
+  {
+   "id": "43vj9yxKnFKbEl7Ss18FnW",
+   "title": "What if I'm not happy with my order? (satisfaction guarantee)",
+   "reason": "Says problems must be reported within 10 days. The complaint policy uses 14 days from delivery; the policy decides. Released automatically once the text no longer says 10 days.",
+   "while_contains": [
+    "within 10 days",
+    "entro 10 giorni"
    ]
   }
  ],

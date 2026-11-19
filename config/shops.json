@@ -93,7 +93,24 @@
    "_note": "Connect = straight copy of the IT end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "it"
+    ],
+    "link_vars": {
+     "my_account_url": "https://www.helloprint.com/it-it/mio-account",
+     "order_page": "https://www.helloprint.com/it-it/mio-account"
+    },
+    "url": "cs",
+    "article_url": "https://helloprint.elevio.help/it/articles/{n}",
+    "exclusions_as": "it-it",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "es-es",
@@ -149,7 +166,21 @@
    "_note": "Connect = straight copy of the ES end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "es-ES"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/es/articles/{n}",
+    "exclusions_as": "es-es",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "nl-nl",
@@ -205,7 +236,21 @@
    "_note": "Connect = straight copy of the nl-nl end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "nl"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/nl/articles/{n}",
+    "exclusions_as": "nl-nl",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "nl-be",
@@ -262,7 +307,22 @@
    "_note": "Connect = straight copy of the nl-be end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "nl-BE",
+     "nl"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/nl/articles/{n}",
+    "exclusions_as": "nl-be",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "fr-be",
@@ -319,7 +379,22 @@
    "_note": "Connect = straight copy of the fr-be end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "fr-BE",
+     "fr-FR"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/fr/articles/{n}",
+    "exclusions_as": "fr-be",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "fr-fr",
@@ -375,7 +450,21 @@
    "_note": "Connect = straight copy of the fr-fr end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "fr-FR"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/fr/articles/{n}",
+    "exclusions_as": "fr-fr",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "de-de",
@@ -431,7 +520,21 @@
    "_note": "Connect = straight copy of the de-de end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "de-DE"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/de/articles/{n}",
+    "exclusions_as": "de-de",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "sv-se",
@@ -487,7 +590,21 @@
    "_note": "Connect = straight copy of the sv-se end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "sv-SE"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/sv/articles/{n}",
+    "exclusions_as": "sv-se",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "en-gb",
@@ -544,7 +661,22 @@
    "_note": "Connect = straight copy of the en-gb end-label content: visibility rules use the end-label domain, only the URLs differ.",
    "products": true,
    "products_include_noindex": true,
-   "products_respect_unavailable": false
+   "products_respect_unavailable": false,
+   "helpcentre": {
+    "enabled": true,
+    "locales": [
+     "en-GB",
+     "en"
+    ],
+    "url": "cs",
+    "link_vars": {},
+    "article_url": "https://helloprint.elevio.help/en/articles/{n}",
+    "exclusions_as": "en-gb",
+    "exclude_categories": [
+     "hcCat-133"
+    ],
+    "exclude_title_regex": "\\bVIP\\b"
+   }
   },
   {
    "id": "en-us",
