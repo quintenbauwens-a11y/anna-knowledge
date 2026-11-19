@@ -238,11 +238,16 @@ def build_help(src, shop, cfg, report, out_dir, site_url, today):
         if cat_id in cfg.get("exclude_categories", {}):
             stats["internal/test category"] = stats.get("internal/test category", 0) + 1
             continue
+        # per-shop exclusions (e.g. Connect has no VIP programme)
+        if cat_id in hc.get("exclude_categories", []) or (
+                hc.get("exclude_title_regex") and re.search(hc["exclude_title_regex"], title, re.I)):
+            stats["not offered on this shop"] = stats.get("not offered on this shop", 0) + 1
+            continue
         if robots.startswith("noindex"):
             stats["noindex"] = stats.get("noindex", 0) + 1
             continue
         exa = cfg.get("exclude_articles", {}).get(e["id"])
-        if exa and ("shops" not in exa or shop["id"] in exa["shops"]):
+        if exa and ("shops" not in exa or shop["id"] in exa["shops"] or hc.get("exclusions_as") in exa["shops"]):
             stats["covered by a policy"] = stats.get("covered by a policy", 0) + 1
             info["excluded"].append((title, cfg["exclude_articles"][e["id"]].get("covered_by", "")))
             continue
@@ -269,7 +274,9 @@ def build_help(src, shop, cfg, report, out_dir, site_url, today):
         cat_name = None
         if cat_id in cats:
             cat_name = pick(cats[cat_id]["fields"].get("title") or cats[cat_id]["fields"].get("name"), chain)
-        if hc.get("url") == "cs":  # old help centre: /cs/articles/<number of hcArt-<number>>
+        if hc.get("article_url"):  # e.g. Connect: Elevio help centre, same article numbers
+            url = hc["article_url"].format(n=e["id"].split("-", 1)[1])
+        elif hc.get("url") == "cs":  # old help centre: /cs/articles/<number of hcArt-<number>>
             url = f"{shop['url_prefix']}/cs/articles/{e['id'].split('-', 1)[1]}"
         else:
             url = f"{shop['url_prefix']}/{hc.get('path', 'help-centre')}/{slug}"
